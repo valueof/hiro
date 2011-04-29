@@ -15,7 +15,9 @@ demo.testTrue = function (window, document) {
 };
 
 demo.testAsync = function (window, document) {
+    this.expect(3);
     this.running = false;
+    this.assertTrue(true);
 
     var that = this;
     setTimeout(function () {

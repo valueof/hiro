@@ -52,17 +52,34 @@
       var tests = this.tests(),
           that  = this;
 
+      function report(test, result) {
+        var exp = test.assertions.expected,
+            act = test.assertions.actual;
+
+        if (result && exp > 0 && !(exp == act)) {
+          try {
+            test.fail('Not all tests were run');
+          } catch (exc) {
+            console.log(exc.message);
+          }
+
+          result = false;
+        }
+
+        that.report[test.name] = result;
+      }
+
       function run() {
         that.running = true;
 
         var test; // Currently running test case
         while (test = tests.pop()) {
           if (test.run()) {
-            that.report[test.name] = test.passed;
+            report(test, test.passed);
           } else {
             that.running = false;
             window.setTimeout(function () {
-              that.report[test.name] = test.running && test.passed;
+              report(test, test.running && test.passed);
               run();
             }, TEST_TIMEOUT);
             return;
@@ -84,19 +101,32 @@
     this.func  = func;
     this.suite = suite;
 
+    this.assertions = {
+      expected: 0,
+      actual:   0
+    };
+
     this.running = false;
     this.passed  = false;
   };
 
   Test.prototype = {
     assertTrue: function (value) {
+      this.assertions.actual++;
+
       if (!value)
         this.fail(value + ' is not true');
     },
 
     assertEqual: function (expected, actual) {
+      this.assertions.actual++;
+
       if (expected !== actual)
         this.fail(expected + ' != ' + actual);
+    },
+
+    expect: function (num) {
+      this.assertions.expected = num;
     },
 
     fail: function (message) {
