@@ -1,22 +1,93 @@
 (function (window, undefined) {
-  var TEST_TIMEOUT = 5000,
-      suites  = {},
+  var TIMEOUT = 5000, // Default timeout for test cases and suites
+      suites  = {};
 
-      Test,
-      Suite,
-      Failure;
-
-  function report(test, reason) {
-    console.log(test, reason);
+  function each(obj, callback) {
+    for (var key in obj)
+      if (obj.hasOwnProperty(key))
+        callback(obj[key], key);
   }
 
-  function debug() {
-    console.log.apply(console, arguments);
+  /** Merges contents of `source` into `dest` and returns the result */
+  function extend(dest, source) {
+    each(source, function (val, key) {
+      dest[key] = val;
+    });
+    return dest;
   }
 
-  function isTest(suite, name) {
-    return suite.hasOwnProperty(name) && name.slice(0, 4) == 'test';
+  /** Checks if a property can be treated as a test case */
+  function isTest(obj, name) {
+    return obj.hasOwnProperty(name) &&
+      name.slice(0, 4) == 'test' && typeof obj[name] == 'function';
   }
+
+
+  var hiro = function (name) {
+    suites[name] = new Suite(name);
+    return suites[name];
+  };
+
+  extend(hiro, {
+    totalTests:  0,
+    failedTests: 0,
+
+    addFailure: function (test, message) {
+      var div  = document.getElementById('failedTests'),
+          list = document.getElementsByTagName('ol', div)[0],
+          li   = document.createElement('li'),
+          span = document.createElement('span'),
+          text = document.createTextNode(message);
+
+      span.innerHTML = test + ': ';
+      li.appendChild(span);
+      li.appendChild(text);
+      list.appendChild(li);
+    },
+
+    setStatus: function (status) {
+      document.getElementById('report').className = status;
+    },
+
+    setMessage: function (message) {
+      document.getElementById('status').innerHTML = message;
+    },
+
+    run: function () {
+      var running = false,
+          queue   = [],
+          suite;
+
+      // Get all available suites
+      each(suites, function (st, name) {
+        queue.push(st);
+      });
+
+      hiro.setStatus('passed');
+      hiro.setMessage('Running tests...');
+
+      // Run them
+      function run() {
+        running = true;
+
+        while (suite = queue.pop()) {
+          running = suite.run();
+          if (!running)
+            return window.setTimeout(function () {
+              run();
+            }, TIMEOUT);
+        }
+
+        if (hiro.failedTests)
+          hiro.setMessage(hiro.failedTests + ' out of ' + hiro.totalTests + ' passed.');
+        else
+          hiro.setMessage('All ' + hiro.totalTests + ' passed');
+      }
+
+      run();
+    }
+  });
+
 
   Suite = function (name) {
     this.name   = name;
@@ -27,8 +98,12 @@
   };
 
   Suite.prototype = {
-    setup: function (env) {
-      this.env = env;
+    setup: function (fixture) {
+      var els = document.getElementsByTagName('textarea');
+      for (var i = 0, el; el = els[i]; i++)
+        if (el.className == 'fixture' && el.getAttribute('data-name') == fixture) {
+          this.env = el.value;
+      }
     },
 
     /**
@@ -38,12 +113,13 @@
      * @return {array} all available tests
      */
     tests: function () {
-      var tests = [];
+      var tests = [],
+          that  = this;
 
-      for (var name in this) {
-        if (isTest(this, name))
-          tests.push(new Test(name, this[name], this));
-      }
+      each(this, function (prop, name) {
+        if (isTest(that, name))
+          tests.push(new Test(name, that[name], that));
+      });
 
       return tests;
     },
@@ -59,9 +135,7 @@
         if (result && exp > 0 && !(exp == act)) {
           try {
             test.fail('Not all tests were run');
-          } catch (exc) {
-            console.log(exc.message);
-          }
+          } catch (exc) {}
 
           result = false;
         }
@@ -81,7 +155,7 @@
             window.setTimeout(function () {
               report(test, test.running && test.passed);
               run();
-            }, TEST_TIMEOUT);
+            }, TIMEOUT);
             return;
           }
         }
@@ -130,13 +204,21 @@
     },
 
     fail: function (message) {
+      var el = document.getElementById('report');
+
       this.passed = false;
+      hiro.failedTests++;
+      hiro.addFailure(this.suite.name + '.' + this.name, message);
+
+      if (el.className != 'failed')
+        el.className = 'failed';
+
       throw new Failure(message);
     },
 
     run: function () {
-      console.log("Running", this.name);
-
+      hiro.setMessage('Running ' + this.suite.name + '.' + this.name);
+      hiro.totalTests++;
       this.running = true;
       this.passed = true;
 
@@ -148,9 +230,8 @@
       try {
         this.func.call(this, env.contentWindow, env.contentWindow.document);
       } catch (exc) {
-        if (exc instanceof Failure) {
-          console.log('Test ' + this.name + ' failed.');
-        }
+        if (!(exc instanceof Failure))
+          throw exc;
       }
 
       document.body.removeChild(env);
@@ -159,38 +240,5 @@
     }
   };
 
-  window.hiro = function (name) {
-    suites[name] = new Suite(name);
-    return suites[name];
-  };
-
-  hiro.run = function () {
-    var running = false,
-        queue   = [],
-        suite;
-
-    for (var name in suites) {
-      if (suites.hasOwnProperty(name)) {
-        queue.push(suites[name]);
-      }
-    }
-
-    function run() {
-      running = true;
-
-      while (suite = queue.pop()) {
-        if (!suite.run()) {
-          running = false;
-          window.setTimeout(function () {
-            run();
-          }, TEST_TIMEOUT);
-          return;
-        }
-      }
-
-      debug("Done");
-    }
-
-    run();
-  };
+  window.hiro = hiro;
 }(this));

@@ -2,12 +2,43 @@
 
 <html lang="en">
   <head>
-    <title>Hiro</title>
+    <title>Hiro Tests</title>
 
+    <link rel="stylesheet" href="hiro.css">
     <script src="hiro.js"></script>
   </head>
 
-  <body onload="hiro.run();">
+  <body>
+    <div id="header">
+      <h1><a href="http://github.com/antonkovalyov/hiro/">Hiro</a></h1>
+    </div>
+
+    <div id="report" class="running">
+      <p id="status"></p>
+
+      <div id="failedTests">
+        <h2>Failed tests:</h2>
+
+        <ol></ol>
+      </div>
+    </div>
+
+    <textarea class="fixture" data-name="demo">
+      <html>
+        <head>
+          <script>
+            function echo(message) {
+              return message;
+            }
+          </script>
+        </head>
+
+        <body>
+          <p>Echo</p>
+        </body>
+      </html>
+    </textarea>
+
     <script src="test.js"></script>
   </body>
 </html>

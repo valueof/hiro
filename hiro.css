@@ -1,0 +1,98 @@
+body {
+    background-color: #eee;
+    font-family: Verdana, Arial, Serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    font-size: 10pt;
+}
+
+div#header {
+    margin: 50px auto;
+    margin-bottom: 10px;
+    width: 600px;
+    text-align: right;
+}
+
+div#header h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 90%;
+    font-weight: normal;
+    color: #666;
+    text-transform: uppercase;
+}
+
+div#header h1 a {
+    color: #666;
+    text-decoration: none;
+}
+
+div#header h1 a:hover {
+    color: #900020;
+}
+
+div#report {
+    background-color: #fff;
+    margin: 0px auto;
+    width: 600px;
+    border: solid 1px #999;
+    border-radius: 3px;
+    text-align: left;
+    padding: 10px;
+}
+
+div#report p {
+    font-size: 90%;
+    padding: 2px 5px;
+    margin: 0;
+    border-radius: 3px;
+}
+
+div.running p {
+    background-color: #ccc;
+}
+
+div.failed p {
+    background-color: #900020;
+    color: white;
+}
+
+div.passed p {
+    background-color: #014e00;
+    color: white;
+}
+
+div#report h2 {
+    margin: 15px 0 0 0;
+    padding: 0;
+    font-weight: normal;
+    font-size: 100%;
+    text-transform: uppercase;
+    color: #666;
+}
+
+div.running div#failedTests, div.passed div#failedTests {
+    display: none;
+}
+
+div.failed div#failedTests {
+    display: block;
+}
+
+div#report ol {
+    margin: 10px 0 0 0;
+    padding: 0 0 0 35px;
+}
+
+div#report ol li {
+    margin-bottom: 10px;
+}
+
+div#report ol li span {
+    font-weight: bold;
+}
+
+textarea.fixture {
+    display: none;
+}

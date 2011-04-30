@@ -1,7 +1,5 @@
 var demo = hiro('events');
-
-var html = "<html><head><script>function echo(message) { return message; }</script></head><body><p>echo</p></body></html>";
-demo.setup(html);
+demo.setup('demo');
 
 demo.testEcho = function (window, document) {
     var message = "ping",
@@ -11,11 +9,11 @@ demo.testEcho = function (window, document) {
 };
 
 demo.testTrue = function (window, document) {
-    this.assertTrue(false);
+    this.assertTrue(true);
 };
 
 demo.testAsync = function (window, document) {
-    this.expect(3);
+    this.expect(2);
     this.running = false;
     this.assertTrue(true);
 
