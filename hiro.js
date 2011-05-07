@@ -1,6 +1,16 @@
+/*jshint undef:true, browser:true, maxlen: 80, loopfunc:true, strict: true */
+
 (function (window, undefined) {
-  var TIMEOUT = 5000, // Default timeout for test cases and suites
-      suites  = {};
+  "use strict";
+
+  var document     = window.document,
+      setTimeout   = window.setTimeout,
+      clearTimeout = window.clearTimeout,
+      TIMEOUT      = 5000, // Default timeout for test cases and suites
+      suites       = {},
+      Suite,
+      Test,
+      Failure;
 
   function each(obj, callback) {
     for (var key in obj)
@@ -16,15 +26,33 @@
     return dest;
   }
 
-  /** Checks if a property can be treated as a test case */
+  /** Checks if property can be treated as a test case */
   function isTest(obj, name) {
     return obj.hasOwnProperty(name) &&
       name.slice(0, 4) == 'test' && typeof obj[name] == 'function';
   }
 
+  /** Checks if DOMElement can be treated as a fixture */
+  function isFixture(el, name) {
+    return el.className == 'fixture' && el.getAttribute('data-name') == name;
+  }
 
-  var hiro = function (name) {
+  /** Adds text to the output element */
+  function log(text, callback) {
+    /*jshint expr: true */
+    var line = document.createElement('p'),
+        cons = document.getElementById('console');
+
+    line.innerHTML = text;
+    callback && callback(line);
+    cons.appendChild(line);
+  }
+
+  var hiro = function (name, options) {
+    options = options || {};
     suites[name] = new Suite(name);
+    if (options.fixture)
+      suites[name].setup(options.fixture);
     return suites[name];
   };
 
@@ -32,78 +60,93 @@
     totalTests:  0,
     failedTests: 0,
 
-    addFailure: function (test, message) {
-      var div  = document.getElementById('failedTests'),
-          list = document.getElementsByTagName('ol', div)[0],
-          li   = document.createElement('li'),
-          span = document.createElement('span'),
-          text = document.createTextNode(message);
-
-      span.innerHTML = test + ': ';
-      li.appendChild(span);
-      li.appendChild(text);
-      list.appendChild(li);
-    },
-
     setStatus: function (status) {
       document.getElementById('report').className = status;
     },
 
-    setMessage: function (message) {
-      document.getElementById('status').innerHTML = message;
+    log: function () {
+      log(Array.prototype.join.call(arguments, ' '));
+    },
+
+    logFailure: function () {
+      log(Array.prototype.join.call(arguments, ' '), function (el) {
+        el.className = 'fail';
+      });
+    },
+
+    logSuccess: function () {
+      log(Array.prototype.join.call(arguments, ' '), function (el) {
+        el.className = 'succ';
+      });
     },
 
     run: function () {
       var running = false,
-          queue   = [],
-          suite;
+          queue   = [];
 
       // Get all available suites
       each(suites, function (st, name) {
         queue.push(st);
       });
 
-      hiro.setStatus('passed');
-      hiro.setMessage('Running tests...');
+      hiro.log('Running tests...');
 
       // Run them
       function run() {
+        /*jshint boss:true */
         running = true;
+
+        var suite,
+            timeout,
+            func;
 
         while (suite = queue.pop()) {
           running = suite.run();
-          if (!running)
-            return window.setTimeout(function () {
+
+          if (!running) {
+            func = function () {
+              clearTimeout(timeout);
               run();
-            }, TIMEOUT);
+            };
+
+            suite.onResume = func;
+            timeout = setTimeout(func, TIMEOUT);
+            return;
+          }
         }
 
-        if (hiro.failedTests)
-          hiro.setMessage(hiro.failedTests + ' out of ' + hiro.totalTests + ' passed.');
-        else
-          hiro.setMessage('All ' + hiro.totalTests + ' passed');
+        var failed = hiro.failedTests,
+            total  = hiro.totalTests;
+
+        if (hiro.failedTests) {
+          hiro.logFailure(failed, 'out of', total, 'failed.');
+        } else {
+          hiro.logSuccess('All', total, 'passed');
+          hiro.setStatus('passed');
+        }
       }
 
       run();
     }
   });
 
-
   Suite = function (name) {
     this.name   = name;
     this.report = {};
     this.env    = '';
 
-    this.running = false;
+    this.running  = false;
+    this.onResume = function () {};
   };
 
   Suite.prototype = {
-    setup: function (fixture) {
+    setup: function (fixtureName) {
+      /*jshint boss:true */
+
       var els = document.getElementsByTagName('textarea');
       for (var i = 0, el; el = els[i]; i++)
-        if (el.className == 'fixture' && el.getAttribute('data-name') == fixture) {
+        if (isFixture(el, fixtureName))
           this.env = el.value;
-      }
     },
 
     /**
@@ -128,36 +171,46 @@
       var tests = this.tests(),
           that  = this;
 
-      function report(test, result) {
+      function report(test) {
         var exp = test.assertions.expected,
-            act = test.assertions.actual;
+            act = test.assertions.actual,
+            result = false;
 
-        if (result && exp > 0 && !(exp == act)) {
-          try {
-            test.fail('Not all tests were run');
-          } catch (exc) {}
-
-          result = false;
-        }
+        if (!test.running)
+          test.fail('Timed out', true);
+        else if (exp > 0 && exp != act)
+          test.fail('Not all assertions were executed', true);
+        else
+          result = true;
 
         that.report[test.name] = result;
       }
 
       function run() {
+        /*jshint boss:true */
         that.running = true;
 
-        var test; // Currently running test case
+        var test,    // Currently running test case
+            timeout, // A timeout for asynchronous tests
+            func;    // A function to call when test either calls resume()
+                     // or times out.
+
         while (test = tests.pop()) {
-          if (test.run()) {
-            report(test, test.passed);
-          } else {
+          if (!test.run()) {
             that.running = false;
-            window.setTimeout(function () {
-              report(test, test.running && test.passed);
+
+            func = function () {
+              clearTimeout(timeout);
+              report(test);
               run();
-            }, TIMEOUT);
+            };
+
+            test.onResume = func;
+            timeout = setTimeout(func, TIMEOUT);
             return;
           }
+
+          report(test, test.passed);
         }
       }
 
@@ -182,6 +235,8 @@
 
     this.running = false;
     this.passed  = false;
+
+    this.onResume = function () {};
   };
 
   Test.prototype = {
@@ -190,6 +245,8 @@
 
       if (!value)
         this.fail(value + ' is not true');
+      else if (!this.running)
+        this.resume();
     },
 
     assertEqual: function (expected, actual) {
@@ -197,27 +254,34 @@
 
       if (expected !== actual)
         this.fail(expected + ' != ' + actual);
+      else if (!this.running)
+        this.resume();
     },
 
     expect: function (num) {
       this.assertions.expected = num;
     },
 
-    fail: function (message) {
+    fail: function (message, noexc) {
       var el = document.getElementById('report');
 
       this.passed = false;
       hiro.failedTests++;
-      hiro.addFailure(this.suite.name + '.' + this.name, message);
+      hiro.setStatus('failed');
+      hiro.logFailure('Test', this.toString(), 'failed:', message);
 
       if (el.className != 'failed')
         el.className = 'failed';
 
-      throw new Failure(message);
+      if (!this.running)
+        this.resume();
+
+      if (!noexc)
+        throw new Failure(message);
     },
 
     run: function () {
-      hiro.setMessage('Running ' + this.suite.name + '.' + this.name);
+      hiro.log('Running', this.toString());
       hiro.totalTests++;
       this.running = true;
       this.passed = true;
@@ -232,11 +296,25 @@
       } catch (exc) {
         if (!(exc instanceof Failure))
           throw exc;
+      } finally {
+        document.body.removeChild(env);
       }
 
-      document.body.removeChild(env);
-
       return this.running;
+    },
+
+    pause: function () {
+      this.running = false;
+    },
+
+    resume: function () {
+      this.running = true;
+      this.onResume();
+      this.suite.onResume();
+    },
+
+    toString: function () {
+      return this.suite.name + '.' + this.name;
     }
   };
 

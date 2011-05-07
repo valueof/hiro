@@ -10,17 +10,18 @@
 
   <body>
     <div id="header">
-      <h1><a href="http://github.com/antonkovalyov/hiro/">Hiro</a></h1>
+      <h1>Hiro</h1>
+      <p><a onclick="hiro.run(); return false;" href="#">Run all</a></p>
     </div>
 
-    <div id="report" class="running">
-      <p id="status"></p>
-
-      <div id="failedTests">
-        <h2>Failed tests:</h2>
-
-        <ol></ol>
+    <div id="report" class="idle">
+      <div id="console">
+        <p>Ready.</p>
       </div>
+    </div>
+
+    <div id="footer">
+      (music, movies, microcode)
     </div>
 
     <textarea class="fixture" data-name="demo">
