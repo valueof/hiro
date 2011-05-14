@@ -3,41 +3,33 @@
 (function (window, undefined) {
   "use strict";
 
-  var document     = window.document,
-      setTimeout   = window.setTimeout,
-      clearTimeout = window.clearTimeout,
-      TIMEOUT      = 5000, // Default timeout for test cases and suites
-      suites       = {},
-      Suite,
-      Test,
-      Failure;
+  var document     = window.document;
+  var setTimeout   = window.setTimeout;
+  var clearTimeout = window.clearTimeout;
+  var TIMEOUT      = 5000; // Default timeout for test cases and suites
+  var suites       = {};
+
+  var Suite;
+  var Test;
+  var Failure;
+  var hiro;
 
   function each(obj, callback) {
+    /*jshint expr: true */
     for (var key in obj)
-      if (obj.hasOwnProperty(key))
-        callback(obj[key], key);
+      obj.hasOwnProperty(key) && callback(obj[key], key);
   }
 
-  /** Merges contents of `source` into `dest` and returns the result */
   function extend(dest, source) {
-    each(source, function (val, key) {
-      dest[key] = val;
-    });
+    each(source, function (val, key) { dest[key] = val; });
     return dest;
   }
 
-  /** Checks if property can be treated as a test case */
   function isTest(obj, name) {
     return obj.hasOwnProperty(name) &&
       name.slice(0, 4) == 'test' && typeof obj[name] == 'function';
   }
 
-  /** Checks if DOMElement can be treated as a fixture */
-  function isFixture(el, name) {
-    return el.className == 'fixture' && el.getAttribute('data-name') == name;
-  }
-
-  /** Adds text to the output element */
   function log(text, callback) {
     /*jshint expr: true */
     var line = document.createElement('p'),
@@ -48,11 +40,35 @@
     cons.appendChild(line);
   }
 
-  var hiro = function (name, options) {
-    options = options || {};
+  function waitFor(condition, onSuccess, onFailure) {
+    /*jshint expr: true */
+    var elapsed = 0;
+
+    function wait() {
+      elapsed += 100;
+      if (condition())
+        onSuccess();
+      else if (elapsed < TIMEOUT)
+        setTimeout(wait, 100);
+      else
+        onFailure();
+    }
+
+    condition() ? onSuccess() : wait();
+  }
+
+  function createFrame(id) {
+    var frame = document.createElement('iframe');
+
+    frame.id = id;
+    frame.style.position = 'absolute';
+    frame.style.top = '-2000px';
+    document.body.appendChild(frame);
+    return frame;
+  }
+
+  hiro = function (name) {
     suites[name] = new Suite(name);
-    if (options.fixture)
-      suites[name].setup(options.fixture);
     return suites[name];
   };
 
@@ -135,18 +151,24 @@
     this.report = {};
     this.env    = '';
 
-    this.running  = false;
+    this.running = false;
+    this.events_ = {};
     this.onResume = function () {};
   };
 
   Suite.prototype = {
-    setup: function (fixtureName) {
-      /*jshint boss:true */
+    waitFor: function (condition) {
+      this.condition_ = condition;
+    },
 
+    loadFixture: function (name) {
+      /*jshint boss: true */
       var els = document.getElementsByTagName('textarea');
-      for (var i = 0, el; el = els[i]; i++)
-        if (isFixture(el, fixtureName))
+
+      for (var i = 0, el; el = els[i]; i++) {
+        if (el.className == 'fixture' && el.getAttribute('data-name') == name)
           this.env = el.value;
+      }
     },
 
     /**
@@ -169,7 +191,8 @@
 
     run: function () {
       var tests = this.tests(),
-          that  = this;
+          that  = this,
+          env;
 
       function report(test) {
         var exp = test.assertions.expected,
@@ -196,6 +219,7 @@
                      // or times out.
 
         while (test = tests.pop()) {
+          test.env = env;
           if (!test.run()) {
             that.running = false;
 
@@ -212,9 +236,27 @@
 
           report(test, test.passed);
         }
+
+        document.body.removeChild(env);
       }
 
-      run();
+      env = createFrame('__env__' + this.name);
+      env.contentWindow.document.write(this.env);
+      env.contentWindow.document.close();
+
+      function condition() {
+        return that.condition_(env.contentWindow, env.contentWindow.document);
+      }
+
+      if (this.condition_) {
+        this.running = false;
+        waitFor(condition, run, function () {
+          hiro.logFailure('Condition for suite', that.name, 'timed out');
+        });
+      } else {
+        run();
+      }
+
       return this.running;
     }
   };
@@ -258,6 +300,32 @@
         this.resume();
     },
 
+    assertNoException: function (func) {
+      this.assertions.actual++;
+
+      try {
+        func();
+        if (!this.running)
+          this.resume();
+      } catch (exc) {
+        this.fail('Exception ' + exc.toString() + ' has been thrown');
+      }
+    },
+
+    assertException: function (func, expectedException) {
+      this.assertions.actual++;
+
+      try {
+        func();
+        this.fail('Expected exception');
+      } catch (exc) {
+        if (!(exc instanceof expectedException))
+          this.fail('Wrong exception has been thrown');
+        else if (!this.running)
+          this.resume();
+      }
+    },
+
     expect: function (num) {
       this.assertions.expected = num;
     },
@@ -286,18 +354,13 @@
       this.running = true;
       this.passed = true;
 
-      var env = document.createElement('iframe');
-      env.id = '__env__' + this.name;
-      document.body.appendChild(env);
-      env.contentWindow.document.write(this.suite.env);
+      var win = this.env.contentWindow;
 
       try {
-        this.func.call(this, env.contentWindow, env.contentWindow.document);
+        this.func.call(this, win, win.document);
       } catch (exc) {
         if (!(exc instanceof Failure))
           throw exc;
-      } finally {
-        document.body.removeChild(env);
       }
 
       return this.running;
