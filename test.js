@@ -1,4 +1,9 @@
-var demo = hiro('events', { fixture: 'demo' });
+var demo = hiro();
+
+demo.loadFixture('demo');
+demo.waitFor(function (window, document) {
+    return window.isReady;
+});
 
 demo.testEcho = function (window, document) {
     var message = "ping",
@@ -8,7 +13,7 @@ demo.testEcho = function (window, document) {
 };
 
 demo.testTrue = function (window, document) {
-    this.assertTrue(false);
+    this.assertTrue(true);
 };
 
 demo.testAsync = function (window, document) {
