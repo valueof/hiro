@@ -1,6 +1,6 @@
-/*jshint undef:true, browser:true, maxlen: 80, loopfunc:true, strict: true */
+/*jshint undef:true, browser:true, maxlen: 80, loopfunc:true, strict: true, eqnull: true */
 
-(function (window, undefined) {
+var hiro = (function (window, undefined) {
   "use strict";
 
   var document     = window.document;
@@ -11,154 +11,113 @@
 
   var Suite;
   var Test;
-  var Failure;
-  var hiro;
+  var Logger;
 
   function each(obj, callback) {
-    /*jshint expr: true */
-    for (var key in obj)
-      obj.hasOwnProperty(key) && callback(obj[key], key);
-  }
-
-  function extend(dest, source) {
-    each(source, function (val, key) { dest[key] = val; });
-    return dest;
-  }
-
-  function isTest(obj, name) {
-    return obj.hasOwnProperty(name) &&
-      name.slice(0, 4) == 'test' && typeof obj[name] == 'function';
-  }
-
-  function log(text, callback) {
-    /*jshint expr: true */
-    var line = document.createElement('p'),
-        cons = document.getElementById('console');
-
-    line.innerHTML = text;
-    callback && callback(line);
-    cons.appendChild(line);
-  }
-
-  function waitFor(condition, onSuccess, onFailure) {
-    /*jshint expr: true */
-    var elapsed = 0;
-
-    function wait() {
-      elapsed += 100;
-      if (condition())
-        onSuccess();
-      else if (elapsed < TIMEOUT)
-        setTimeout(wait, 100);
-      else
-        onFailure();
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) callback(obj[key], key);
     }
-
-    condition() ? onSuccess() : wait();
   }
 
-  function createFrame(id) {
-    var frame = document.createElement('iframe');
-
-    frame.id = id;
-    frame.style.position = 'absolute';
-    frame.style.top = '-2000px';
-    document.body.appendChild(frame);
-    return frame;
+  function timestamp() {
+    var date = new Date();
+    var args = [
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      date.getUTCHours(),
+      date.getUTCMinutes(),
+      date.getUTCSeconds(),
+      date.getUTCMilliseconds()
+    ];
+    return Date.UTC.call(null, args);
   }
 
-  hiro = function (name) {
-    suites[name] = new Suite(name);
-    return suites[name];
-  };
+  Suite = function (name, methods) {
+    this.name     = name;
+    this.methods  = methods;
+    this.report   = {};
+    this.env      = '';
+    this.status   = null;
+    this.snapshot = null;
 
-  extend(hiro, {
-    totalTests:  0,
-    failedTests: 0,
-
-    setStatus: function (status) {
-      document.getElementById('report').className = status;
-    },
-
-    log: function () {
-      log(Array.prototype.join.call(arguments, ' '));
-    },
-
-    logFailure: function () {
-      log(Array.prototype.join.call(arguments, ' '), function (el) {
-        el.className = 'fail';
-      });
-    },
-
-    logSuccess: function () {
-      log(Array.prototype.join.call(arguments, ' '), function (el) {
-        el.className = 'succ';
-      });
-    },
-
-    run: function () {
-      var running = false,
-          queue   = [];
-
-      // Get all available suites
-      each(suites, function (st, name) {
-        queue.push(st);
-      });
-
-      hiro.log('Running tests...');
-
-      // Run them
-      function run() {
-        /*jshint boss:true */
-        running = true;
-
-        var suite,
-            timeout,
-            func;
-
-        while (suite = queue.pop()) {
-          running = suite.run();
-
-          if (!running) {
-            func = function () {
-              clearTimeout(timeout);
-              run();
-            };
-
-            suite.onResume = func;
-            timeout = setTimeout(func, TIMEOUT);
-            return;
-          }
-        }
-
-        var failed = hiro.failedTests,
-            total  = hiro.totalTests;
-
-        if (hiro.failedTests) {
-          hiro.logFailure(failed, 'out of', total, 'failed.');
-        } else {
-          hiro.logSuccess('All', total, 'passed');
-          hiro.setStatus('passed');
-        }
-      }
-
-      run();
-    }
-  });
-
-  Suite = function (name) {
-    this.name   = name;
-    this.report = {};
-    this.env    = '';
-
-    this.running = false;
-    this.events_ = {};
-    this.onResume = function () {};
+    // Refs to the sandboxed environment
+    this.frame    = null;
+    this.window   = null;
+    this.document = null;
   };
 
   Suite.prototype = {
-    waitFor: function (condition) {
-      this.condition_ = condition;
+    setUp_: function () {
+      var self = this;
+
+      // If user provided a setUp method, call it (this is their chance
+      // to load any fixtures)
+      if (self.methods.setUp)
+        self.methods.setUp.apply(self);
+
+      // If user loaded a fixture, create a sandboxed environment with an
+      // iframe and document.write that fixture into it.
+      if (self.env !== '') {
+        self.frame = document.createElement('iframe');
+        self.frame.id = 'hiro_fixture_' + this.name;
+        self.frame.style.position = 'absolute';
+        self.frame.style.top = '-2000px';
+        document.body.appendChild(self.frame);
+
+        // Save references to the sandboxed environment
+        self.window = self.frame.contentWindow;
+        self.document = self.window.document;
+
+        // We need to document.close right away or Internet Explorer hangs
+        // when injected code tries to load external resources.
+        self.document.write(self.env);
+        self.document.close();
+      }
+
+      if (self.methods.waitFor) {
+        self.status = 'waiting';
+        self.snapshot = timestamp();
+
+        var interval = setInterval(function () {
+          if (self.status != 'waiting')
+            return;
+
+          if (self.methods.waitFor.apply(self)) {
+            self.snapshot = null;
+            self.status = 'ready';
+            clearInterval(interval);
+          }
+        }, 100);
+
+        return;
+      }
+
+      self.status = 'ready';
+    },
+
+    timedout_: function () {
+      if (!this.snapshot)
+        return false;
+
+      return (timestamp() - this.snapshot) > TIMEOUT;
+    },
+
+    tearDown_: function () {
+      if (this.status != 'finished')
+        return;
+
+      if (this.frame) {
+        this.window = null;
+        this.document = null;
+        document.body.removeChild(this.frame);
+      }
+
+      this.status = 'done';
+    },
+
+    report_: function () {
+      // Pass
     },
 
     loadFixture: function (name) {
@@ -171,209 +130,105 @@
       }
     },
 
-    /**
-     * Introspects the current object to get a list of available test cases.
-     * Test case is any function that starts with 'test'.
-     *
-     * @return {array} all available tests
-     */
-    tests: function () {
-      var tests = [],
-          that  = this;
+    run: function () {
+      /*jshint boss:true */
 
-      each(this, function (prop, name) {
-        if (isTest(that, name))
-          tests.push(new Test(name, that[name], that));
+      var self  = this;
+      var queue = [];
+      var test;
+
+      // Push all available tests to the queue
+      each(self.methods, function (method, name) {
+        if (typeof method == 'function' && name.slice(0, 4) == 'test')
+          queue.push(new Test(name, method, self));
       });
 
-      return tests;
-    },
+      test = queue.pop();
+      self.status = 'running';
 
-    run: function () {
-      var tests = this.tests(),
-          that  = this,
-          env;
+      var interval = setInterval(function () {
+        if (test == null)
+          return clearInterval(interval);
 
-      function report(test) {
-        var exp = test.assertions.expected,
-            act = test.assertions.actual,
-            result = false;
+        switch(test.status) {
+        case 'ready':
+          // Test is ready to be executed.
+          test.run();
 
-        if (!test.running)
-          test.fail('Timed out', true);
-        else if (exp > 0 && exp != act)
-          test.fail('Not all assertions were executed', true);
-        else
-          result = true;
+          /* falls through */
+        case 'running':
+          // Test may put the suite into the running mode by pausing
+          // themselves (usually when they wait for async callbacks)
+          if (test.timedout_())
+            test.status = 'finished';
 
-        that.report[test.name] = result;
-      }
+          /* falls through */
+        case 'done':
+          // Test is done executing
+          test.report_();
 
-      function run() {
-        /*jshint boss:true */
-        that.running = true;
-
-        var test,    // Currently running test case
-            timeout, // A timeout for asynchronous tests
-            func;    // A function to call when test either calls resume()
-                     // or times out.
-
-        while (test = tests.pop()) {
-          test.env = env;
-          if (!test.run()) {
-            that.running = false;
-
-            func = function () {
-              clearTimeout(timeout);
-              report(test);
-              run();
-            };
-
-            test.onResume = func;
-            timeout = setTimeout(func, TIMEOUT);
-            return;
-          }
-
-          report(test, test.passed);
+          /* falls through */
+        default:
+          // If test is not done yet, don't proceed with the loop
+          if (test.status == 'done')
+            test = queue.pop();
         }
-
-        document.body.removeChild(env);
-      }
-
-      env = createFrame('__env__' + this.name);
-      env.contentWindow.document.write(this.env);
-      env.contentWindow.document.close();
-
-      function condition() {
-        return that.condition_(env.contentWindow, env.contentWindow.document);
-      }
-
-      if (this.condition_) {
-        this.running = false;
-        waitFor(condition, run, function () {
-          hiro.logFailure('Condition for suite', that.name, 'timed out');
-        });
-      } else {
-        run();
-      }
-
-      return this.running;
+      }, 100);
     }
   };
 
-  Failure = function (message) {
-    this.message = message;
-  };
-
   Test = function (name, func, suite) {
-    this.name  = name;
-    this.func  = func;
-    this.suite = suite;
+    this.name     = name;
+    this.func     = func;
+    this.suite    = suite;
+    this.status   = 'ready';
+    this.failed   = false;
+    this.paused   = false;
+    this.snapshot = null;
 
-    this.assertions = {
+    this.window   = this.suite.window;
+    this.document = this.suite.document;
+
+    this.asserts_ = {
       expected: 0,
       actual:   0
     };
-
-    this.running = false;
-    this.passed  = false;
-
-    this.onResume = function () {};
   };
 
   Test.prototype = {
-    assertTrue: function (value) {
-      this.assertions.actual++;
-
-      if (!value)
-        this.fail(value + ' is not true');
-      else if (!this.running)
-        this.resume();
+    fail_: function (message) {
+      hiro.logger.error(message);
+      this.failed = true;
     },
 
-    assertEqual: function (expected, actual) {
-      this.assertions.actual++;
+    timedout_: function () {
+      if (!this.snapshot)
+        return false;
 
-      if (expected !== actual)
-        this.fail(expected + ' != ' + actual);
-      else if (!this.running)
-        this.resume();
-    },
-
-    assertNoException: function (func) {
-      this.assertions.actual++;
-
-      try {
-        func();
-        if (!this.running)
-          this.resume();
-      } catch (exc) {
-        this.fail('Exception ' + exc.toString() + ' has been thrown');
-      }
-    },
-
-    assertException: function (func, expectedException) {
-      this.assertions.actual++;
-
-      try {
-        func();
-        this.fail('Expected exception');
-      } catch (exc) {
-        if (!(exc instanceof expectedException))
-          this.fail('Wrong exception has been thrown');
-        else if (!this.running)
-          this.resume();
-      }
+      return (timestamp() - this.snapshot) > TIMEOUT;
     },
 
     expect: function (num) {
-      this.assertions.expected = num;
-    },
-
-    fail: function (message, noexc) {
-      var el = document.getElementById('report');
-
-      this.passed = false;
-      hiro.failedTests++;
-      hiro.setStatus('failed');
-      hiro.logFailure('Test', this.toString(), 'failed:', message);
-
-      if (el.className != 'failed')
-        el.className = 'failed';
-
-      if (!this.running)
-        this.resume();
-
-      if (!noexc)
-        throw new Failure(message);
+      this.asserts_.expected = num;
     },
 
     run: function () {
-      hiro.log('Running', this.toString());
-      hiro.totalTests++;
-      this.running = true;
-      this.passed = true;
+      hiro.logger.info('Running test', this.toString());
+      this.status = 'running';
+      this.func.call(this);
 
-      var win = this.env.contentWindow;
-
-      try {
-        this.func.call(this, win, win.document);
-      } catch (exc) {
-        if (!(exc instanceof Failure))
-          throw exc;
-      }
-
-      return this.running;
+      if (!this.paused)
+        this.status = 'done';
     },
 
     pause: function () {
-      this.running = false;
+      this.paused = true;
     },
 
     resume: function () {
-      this.running = true;
-      this.onResume();
-      this.suite.onResume();
+      this.paused = false;
+      if (this.status == 'running')
+        this.status = 'done';
     },
 
     toString: function () {
@@ -381,5 +236,158 @@
     }
   };
 
-  window.hiro = hiro;
+  var asserts = {
+    assertTrue: function (value) {
+      this.asserts_.actual++;
+
+      if (!value)
+        this.fail_(value + ' is not truthy');
+    },
+
+    assertEqual: function (expected, actual) {
+      this.asserts_.actual++;
+
+      if (expected !== actual)
+        this.fail_(expected + ' != ' + actual);
+    },
+
+    assertNoException: function (func) {
+      this.asserts_.actual++;
+
+      try {
+        func();
+      } catch (exc) {
+        this.fail_('Exception ' + exc.toString() + ' has been thrown');
+      }
+    },
+
+    assertException: function (func, expectedException) {
+      this.asserts_.actual++;
+
+      try {
+        func();
+        this.fail_('Expected exception');
+      } catch (exc) {
+        if (!(exc instanceof expectedException))
+          this.fail_('Wrong exception has been thrown');
+      }
+    }
+  };
+
+  each(asserts, function (fn, name) {
+    Test.prototype[name] = function () {
+      this.asserts_.actual++;
+      if (this.failed)
+        return;
+      fn.call(this, arguments);
+    };
+  });
+
+
+  Logger = function (el) {
+    this.container = el;
+  };
+
+  Logger.prototype = {
+    write_: function (args, className) {
+      var msg  = Array.prototype.join.call(args, ' ');
+      var line = document.createElement('p');
+      var cons = document.getElementById('console');
+
+      line.innerHTML = msg;
+      if (className)
+        line.className = className;
+      cons.appendChild(line);
+    },
+
+    info: function () {
+      this.write_(arguments);
+    },
+
+    error: function () {
+      this.write_(arguments, 'fail');
+    },
+
+    success: function () {
+      this.write_(arguments, 'succ');
+    }
+  };
+
+  return {
+    // We're exposing private objects for unit tests.
+    // NOBODY should use them outside of unit tests.
+    internals_: {
+      Suite:   Suite,
+      Test:    Test,
+      Logger:  Logger
+    },
+
+    logger: new Logger(),
+
+    module: function (name, methods) {
+      suites[name] = new Suite(name, methods);
+    },
+
+    run: function () {
+      /*jshint boss:true */
+
+      var running = false;
+      var queue   = [];
+      var suite;
+
+      // Push all available suites to the queue
+      each(suites, function (suite, name) {
+        queue.push(suite);
+      });
+
+      suite = queue.pop();
+      hiro.logger.info('Running tests...');
+
+      var interval = setInterval(function () {
+        if (suite == null)
+          return clearInterval(interval);
+
+        switch (suite.status) {
+        case null:
+          // Suite hasn't been started yet. We need to reset necessary
+          // properties and call user-defined setUp and waitFor
+          // methods (if any)
+          suite.setUp_();
+
+          /* falls through */
+        case 'waiting':
+          // If user specified waitFor it may put the suite into the waiting
+          // status, meaning that we have to wait until user-provided
+          // condition is met or until we hit the TIMEOUT value.
+          if (suite.timedout_())
+            suite.status = 'finished';
+
+          /* falls through */
+        case 'ready':
+          // Suite is ready to be executed.
+          suite.run();
+
+          /* falls through */
+        case 'running':
+          // Tests may put the suite into the running mode by pausing
+          // themselves (usually when they wait for asyncronous callbacks).
+          if (suite.timedout_())
+            suite.status = 'finished';
+
+          /* falls through */
+        case 'finished':
+          // Suite is done executing (including async tests), we can do
+          // cleanup and report the results.
+          suite.tearDown_();
+          suite.report_();
+
+          /* falls through */
+        default:
+          // If suite is not done yet, don't proceed with the loop
+          if (suite.status == 'done')
+            suite = queue.pop();
+        }
+      }, 100);
+    }
+  };
 }(this));
