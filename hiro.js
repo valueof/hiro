@@ -117,7 +117,20 @@ var hiro = (function (window, undefined) {
     },
 
     report_: function () {
-      // Pass
+      if (this.timedout_()) {
+        hiro.logger.error('Suite', this.name, 'timed out');
+        return false;
+      }
+
+      for (var name in this.report) {
+        if (!this.report[name]) {
+          hiro.logger.error('Suite', this.name, 'failed');
+          return false;
+        }
+      }
+
+      hiro.logger.success('Suite', this.name, 'succeeded');
+      return true;
     },
 
     loadFixture: function (name) {
@@ -145,10 +158,13 @@ var hiro = (function (window, undefined) {
 
       test = queue.pop();
       self.status = 'running';
+      self.snapshot = timestamp();
 
       var interval = setInterval(function () {
-        if (test == null)
+        if (test == null) {
+          self.status = 'finished';
           return clearInterval(interval);
+        }
 
         // Test is ready to be executed
         if (test.status == 'ready')
@@ -161,7 +177,7 @@ var hiro = (function (window, undefined) {
 
         // Test is done executing
         if (test.status == 'done') {
-          test.report_();
+          self.report[test.name] = test.report_();
           test = queue.pop();
         }
       }, 100);
@@ -200,12 +216,48 @@ var hiro = (function (window, undefined) {
     },
 
     report_: function () {
-      if (this.timedout_())
+      if (this.timedout_()) {
         hiro.logger.error('Test', this.toString(), 'timed out');
-      else if (this.failed)
+        return false;
+      }
+
+      if (this.failed) {
         hiro.logger.error('Test', this.toString(), 'failed');
-      else
-        hiro.logger.success('Test', this.toString(), 'succeeded');
+        return false;
+      }
+
+      if (this.asserts_.expected != this.asserts_.actual) {
+        hiro.logger.error('Not all assertions were executed');
+        return false;
+      }
+
+      hiro.logger.success('Test', this.toString(), 'succeeded');
+      return true;
+    },
+
+    /*
+     * WARNING:
+     *   You should _never_ use this method in your own tests.
+     *                          — Love, Fu-Tzu
+     */
+    kungFuReversed_: function (sandbox) {
+      var error   = hiro.logger.error;
+      hiro.logger.error = function () {};
+
+      try {
+        if (!this.failed) {
+          sandbox.call(this);
+
+          if (!this.failed)
+            hiro.logger.write_(['Reversed test', this.name, 'failed'], 'fail');
+
+          this.failed = !this.failed;
+        }
+      } catch (exc) {
+        // pass
+      } finally {
+        hiro.logger.error = error;
+      }
     },
 
     expect: function (num) {
@@ -239,22 +291,16 @@ var hiro = (function (window, undefined) {
 
   var asserts = {
     assertTrue: function (value) {
-      this.asserts_.actual++;
-
       if (!value)
         this.fail_(value + ' is not truthy');
     },
 
     assertEqual: function (expected, actual) {
-      this.asserts_.actual++;
-
       if (expected !== actual)
         this.fail_(expected + ' != ' + actual);
     },
 
     assertNoException: function (func) {
-      this.asserts_.actual++;
-
       try {
         func();
       } catch (exc) {
@@ -263,8 +309,6 @@ var hiro = (function (window, undefined) {
     },
 
     assertException: function (func, expectedException) {
-      this.asserts_.actual++;
-
       try {
         func();
         this.fail_('Expected exception');
@@ -319,8 +363,7 @@ var hiro = (function (window, undefined) {
     // NOBODY should use them outside of unit tests.
     internals_: {
       Suite:   Suite,
-      Test:    Test,
-      Logger:  Logger
+      Test:    Test
     },
 
     logger: new Logger(),
@@ -337,9 +380,8 @@ var hiro = (function (window, undefined) {
       var suite;
 
       // Push all available suites to the queue
-      each(suites, function (suite, name) {
-        queue.push(suite);
-      });
+      for (var name in suites)
+        queue.push(suites[name]);
 
       suite = queue.pop();
       hiro.logger.info('Running tests...');
