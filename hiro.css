@@ -65,6 +65,8 @@ div#report {
 
 div#console p {
     color: #444;
+    margin: 0 0 10px 0;
+    padding: 0;
 }
 
 div#console p.succ {
@@ -73,6 +75,16 @@ div#console p.succ {
 
 div#console p.fail {
     color: #900020;
+}
+
+div#console p.title {
+    font-weight: bold;
+    border-top: solid 1px #ccc;
+    padding-top: 10px;
+}
+
+div#console p.indented {
+    margin-left: 20px;
 }
 
 div.idle {
@@ -85,11 +97,6 @@ div.failed {
 
 div.passed {
     border: solid 1px green;
-}
-
-div#report div#console p {
-    margin: 0 0 10px 0;
-    padding: 0;
 }
 
 div#report h2 {

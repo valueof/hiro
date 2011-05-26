@@ -217,12 +217,16 @@ var hiro = (function (window, undefined) {
 
     report_: function () {
       if (this.timedout_()) {
-        hiro.logger.error('Test', this.toString(), 'timed out');
+        hiro.logger.indented = true;
+        hiro.logger.error(this.name, 'timed out');
+        hiro.logger.indented = false;
         return false;
       }
 
       if (this.failed) {
-        hiro.logger.error('Test', this.toString(), 'failed');
+        hiro.logger.indented = true;
+        hiro.logger.error(this.name, 'failed');
+        hiro.logger.indented = false;
         return false;
       }
 
@@ -230,11 +234,15 @@ var hiro = (function (window, undefined) {
       var act = this.asserts_.actual;
 
       if (exp != act) {
+        hiro.logger.indented = true;
         hiro.logger.error(exp, 'were expected but', act, 'were executed');
+        hiro.logger.indented = false;
         return false;
       }
 
-      hiro.logger.success('Test', this.toString(), 'succeeded');
+      hiro.logger.indented = true;
+      hiro.logger.success(this.name, 'succeeded');
+      hiro.logger.indented = false;
       return true;
     },
 
@@ -268,7 +276,10 @@ var hiro = (function (window, undefined) {
     },
 
     run: function () {
-      hiro.logger.info('Running test', this.toString());
+      hiro.logger.indented = true;
+      hiro.logger.info('Running', this.name);
+      hiro.logger.indented = false;
+
       this.status = 'running';
       this.func.call(this);
       this.snapshot = timestamp();
@@ -334,6 +345,7 @@ var hiro = (function (window, undefined) {
 
   Logger = function (el) {
     this.container = el;
+    this.indented  = false;
   };
 
   Logger.prototype = {
@@ -343,9 +355,18 @@ var hiro = (function (window, undefined) {
       var cons = document.getElementById('console');
 
       line.innerHTML = msg;
+
       if (className)
         line.className = className;
+
+      if (this.indented)
+        line.className += ' indented';
+
       cons.appendChild(line);
+    },
+
+    title: function () {
+      this.write_(arguments, 'title');
     },
 
     info: function () {
@@ -391,7 +412,6 @@ var hiro = (function (window, undefined) {
         queue.push(suites[name]);
 
       suite = queue.pop();
-      hiro.logger.info('Running tests...');
 
       var interval = setInterval(function () {
         if (suite == null)
@@ -399,8 +419,11 @@ var hiro = (function (window, undefined) {
 
         // Suite hasn't been started yet. We need to reset necessary properties
         // and call user-defined setUp and waitFor methods (if any)
-        if (suite.status === null)
+        if (suite.status === null) {
+          hiro.logger.title(suite.name);
           suite.setUp_();
+        }
+
 
         // If user specified waitFor it may put the suite into the waiting
         // status, meaning that we have to wait until user-provided condition

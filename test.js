@@ -152,8 +152,8 @@ hiro.module('TestRunnerTests', {
 
     this.assertTrue(test.report_());
     this.assertEqual(output.length, 2);
-    this.assertEqual(output[0], 'Running test test.testDummy');
-    this.assertEqual(output[1], 'Test test.testDummy succeeded');
+    this.assertEqual(output[0], 'Running testDummy');
+    this.assertEqual(output[1], 'testDummy succeeded');
 
     // Test timed out test
     output = [];
@@ -177,8 +177,8 @@ hiro.module('TestRunnerTests', {
       that.assertTrue(!test.report_());
 
       that.assertEqual(output.length, 2);
-      that.assertEqual(output[0], 'Running test test.testDummy');
-      that.assertEqual(output[1], 'Test test.testDummy timed out');
+      that.assertEqual(output[0], 'Running testDummy');
+      that.assertEqual(output[1], 'testDummy timed out');
 
       that.resume();
     }, 1000);
@@ -220,9 +220,9 @@ hiro.module('TestRunnerTests', {
 
     this.assertTrue(!test.report_());
     this.assertEqual(output.length, 3);
-    this.assertEqual(output[0], 'Running test test.testDummy');
+    this.assertEqual(output[0], 'Running testDummy');
     this.assertEqual(output[1], 'false is not truthy')
-    this.assertEqual(output[2], 'Test test.testDummy failed');
+    this.assertEqual(output[2], 'testDummy failed');
   }
 });
 
