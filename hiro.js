@@ -368,6 +368,10 @@ var hiro = (function (window, undefined) {
 
     logger: new Logger(),
 
+    changeTimeout: function (timeout) {
+        TIMEOUT = timeout;
+    },
+
     module: function (name, methods) {
       suites[name] = new Suite(name, methods);
     },

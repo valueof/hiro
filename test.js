@@ -75,13 +75,8 @@ hiro.module('GenericTests', {
 });
 
 hiro.module('LoggerTests', {
-  setUp: function () {
-    this.loadFixture('hirojs');
-  },
-
-  waitFor: function () {
-    return this.window.hiro != null;
-  },
+  setUp: function () { this.loadFixture('hirojs'); },
+  waitFor: function () { return this.window.hiro != null; },
 
   testLogger: function () {
     var doc   = this.document;
@@ -108,5 +103,84 @@ hiro.module('LoggerTests', {
     this.assertEqual(getLines().length, 4);
     this.assertEqual(getLines()[3].innerHTML, 'test success');
     this.assertEqual(getLines()[3].className, 'succ');
+  }
+});
+
+hiro.module('TestTestRunner', {
+  setUp:   function () { this.loadFixture('hirojs'); },
+  waitFor: function () { return this.window.hiro != null; },
+
+  testRun: function () {
+    var output = [];
+    var hiro_  = this.window.hiro;
+    var Test   = hiro_.internals_.Test;
+    var Suite  = hiro_.internals_.Suite;
+    var test   = new Test('testDummy', testCase, new Suite('test', {}));
+
+    function testCase() {
+      this.expect(1);
+      this.assertTrue(true);
+      this.pause();
+    }
+
+    function log() {
+      output.push(Array.prototype.join.call(arguments, ' '));
+    }
+
+    hiro_.changeTimeout(500);
+    hiro_.logger.info = log;
+    hiro_.logger.success = log;
+    hiro_.logger.error = log;
+
+    this.expect(24);
+
+    this.assertEqual(test.name, 'testDummy');
+    this.assertEqual(test.status, 'ready');
+    this.assertTrue(!test.failed);
+    this.assertTrue(!test.paused);
+    this.assertTrue(test.snapshot == null);
+
+    test.run();
+    this.assertEqual(test.status, 'running');
+    this.assertTrue(test.snapshot != null);
+    this.assertTrue(test.paused);
+
+    test.resume();
+    this.assertEqual(test.status, 'done');
+    this.assertTrue(!test.failed);
+    this.assertTrue(!test.paused);
+
+    this.assertTrue(test.report_());
+    this.assertEqual(output.length, 2);
+    this.assertEqual(output[0], 'Running test test.testDummy');
+    this.assertEqual(output[1], 'Test test.testDummy succeeded');
+
+    // Test timed out test
+    output = [];
+    test.status = 'ready';
+    test.failed = false;
+    test.paused = false;
+    test.snapshot = null;
+
+    test.run();
+    this.assertEqual(test.status, 'running');
+    this.assertTrue(test.snapshot != null);
+    this.assertTrue(test.paused);
+
+    this.pause();
+
+    var that = this;
+    setTimeout(function () {
+      that.assertTrue(test.timedout_());
+      test.status = 'done';
+      that.assertTrue(test.paused);
+      that.assertTrue(!test.report_());
+
+      that.assertEqual(output.length, 2);
+      that.assertEqual(output[0], 'Running test test.testDummy');
+      that.assertEqual(output[1], 'Test test.testDummy timed out');
+
+      that.resume();
+    }, 1000);
   }
 });
