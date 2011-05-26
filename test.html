@@ -9,10 +9,10 @@
     <script src="test.js"></script>
   </head>
 
-  <body>
+  <body onload="hiro.autorun();">
     <div id="header">
       <h1>Hiro</h1>
-      <p><a onclick="hiro.run(); return false;" href="#">Run all</a></p>
+      <p><a href="javascript:void(hiro.run());">Run all</a></p>
     </div>
 
     <div id="report" class="idle">

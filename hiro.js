@@ -397,7 +397,15 @@ var hiro = (function (window, undefined) {
     logger: new Logger(),
 
     changeTimeout: function (timeout) {
-        TIMEOUT = timeout;
+      TIMEOUT = timeout;
+    },
+
+    autorun: function () {
+      var query = window.location.search.slice(1).split('.');
+      var suite = query.length ? query[0] : undefined;
+      var test  = query.length > 1 ? query[1] : undefined;
+
+      hiro.run(suite, test);
     },
 
     module: function (name, methods) {
