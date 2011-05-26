@@ -143,18 +143,22 @@ var hiro = (function (window, undefined) {
       }
     },
 
-    run: function () {
+    run: function (testName) {
       /*jshint boss:true */
 
       var self  = this;
       var queue = [];
       var test;
 
-      // Push all available tests to the queue
-      each(self.methods, function (method, name) {
-        if (typeof method == 'function' && name.slice(0, 4) == 'test')
-          queue.push(new Test(name, method, self));
-      });
+      if (!testName) {
+        // Push all available tests to the queue
+        each(self.methods, function (method, name) {
+          if (typeof method == 'function' && name.slice(0, 4) == 'test')
+            queue.push(new Test(name, method, self));
+        });
+      } else {
+        queue = [ new Test(testName, self.methods[testName], self) ];
+      }
 
       test = queue.pop();
       self.status = 'running';
@@ -400,16 +404,21 @@ var hiro = (function (window, undefined) {
       suites[name] = new Suite(name, methods);
     },
 
-    run: function () {
+    run: function (suiteName, testName) {
       /*jshint boss:true */
 
       var running = false;
       var queue   = [];
       var suite;
 
-      // Push all available suites to the queue
-      for (var name in suites)
-        queue.push(suites[name]);
+      if (!suiteName) {
+        // Push all available suites to the queue
+        for (var name in suites) {
+          queue.push(suites[name]);
+        }
+      } else {
+        queue = [ suites[suiteName] ];
+      }
 
       suite = queue.pop();
 
@@ -432,8 +441,12 @@ var hiro = (function (window, undefined) {
           suite.status = 'finished';
 
         // Suite is ready to be executed.
-        if (suite.status == 'ready')
-          suite.run();
+        if (suite.status == 'ready') {
+          if (suiteName && testName)
+            suite.run(testName);
+          else
+            suite.run();
+        }
 
         // Tests may put the suite into the running mode by pausing themselves
         // (usually when they wait for asyncronous callbacks).
