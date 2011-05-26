@@ -30,7 +30,7 @@ var hiro = (function (window, undefined) {
       date.getUTCSeconds(),
       date.getUTCMilliseconds()
     ];
-    return Date.UTC.call(null, args);
+    return Date.UTC.apply(null, args);
   }
 
   Suite = function (name, methods) {
@@ -150,28 +150,19 @@ var hiro = (function (window, undefined) {
         if (test == null)
           return clearInterval(interval);
 
-        switch(test.status) {
-        case 'ready':
-          // Test is ready to be executed.
+        // Test is ready to be executed
+        if (test.status == 'ready')
           test.run();
 
-          /* falls through */
-        case 'running':
-          // Test may put the suite into the running mode by pausing
-          // themselves (usually when they wait for async callbacks)
-          if (test.timedout_())
-            test.status = 'finished';
+        // Test may put the suite into the running mode by pausing themselves
+        // (usually when they wait for async callbacks)
+        if (test.status == 'running' && test.timedout_())
+          test.status = 'done';
 
-          /* falls through */
-        case 'done':
-          // Test is done executing
+        // Test is done executing
+        if (test.status == 'done') {
           test.report_();
-
-          /* falls through */
-        default:
-          // If test is not done yet, don't proceed with the loop
-          if (test.status == 'done')
-            test = queue.pop();
+          test = queue.pop();
         }
       }, 100);
     }
@@ -208,6 +199,15 @@ var hiro = (function (window, undefined) {
       return (timestamp() - this.snapshot) > TIMEOUT;
     },
 
+    report_: function () {
+      if (this.timedout_())
+        hiro.logger.error('Test', this.toString(), 'timed out');
+      else if (this.failed)
+        hiro.logger.error('Test', this.toString(), 'failed');
+      else
+        hiro.logger.success('Test', this.toString(), 'succeeded');
+    },
+
     expect: function (num) {
       this.asserts_.expected = num;
     },
@@ -216,6 +216,7 @@ var hiro = (function (window, undefined) {
       hiro.logger.info('Running test', this.toString());
       this.status = 'running';
       this.func.call(this);
+      this.snapshot = timestamp();
 
       if (!this.paused)
         this.status = 'done';
@@ -279,7 +280,7 @@ var hiro = (function (window, undefined) {
       this.asserts_.actual++;
       if (this.failed)
         return;
-      fn.call(this, arguments);
+      fn.apply(this, arguments);
     };
   });
 
@@ -347,46 +348,36 @@ var hiro = (function (window, undefined) {
         if (suite == null)
           return clearInterval(interval);
 
-        switch (suite.status) {
-        case null:
-          // Suite hasn't been started yet. We need to reset necessary
-          // properties and call user-defined setUp and waitFor
-          // methods (if any)
+        // Suite hasn't been started yet. We need to reset necessary properties
+        // and call user-defined setUp and waitFor methods (if any)
+        if (suite.status === null)
           suite.setUp_();
 
-          /* falls through */
-        case 'waiting':
-          // If user specified waitFor it may put the suite into the waiting
-          // status, meaning that we have to wait until user-provided
-          // condition is met or until we hit the TIMEOUT value.
-          if (suite.timedout_())
-            suite.status = 'finished';
+        // If user specified waitFor it may put the suite into the waiting
+        // status, meaning that we have to wait until user-provided condition
+        // is met or until we hit the TIMEOUT value.
+        if (suite.status == 'waiting' && suite.timedout_())
+          suite.status = 'finished';
 
-          /* falls through */
-        case 'ready':
-          // Suite is ready to be executed.
+        // Suite is ready to be executed.
+        if (suite.status == 'ready')
           suite.run();
 
-          /* falls through */
-        case 'running':
-          // Tests may put the suite into the running mode by pausing
-          // themselves (usually when they wait for asyncronous callbacks).
-          if (suite.timedout_())
-            suite.status = 'finished';
+        // Tests may put the suite into the running mode by pausing themselves
+        // (usually when they wait for asyncronous callbacks).
+        if (suite.status == 'running' && suite.timedout_())
+          suite.status = 'finished';
 
-          /* falls through */
-        case 'finished':
-          // Suite is done executing (including async tests), we can do
-          // cleanup and report the results.
+        // Suite is done executing (including async tests), we can do cleanup
+        // and report the results.
+        if (suite.status == 'finished') {
           suite.tearDown_();
           suite.report_();
-
-          /* falls through */
-        default:
-          // If suite is not done yet, don't proceed with the loop
-          if (suite.status == 'done')
-            suite = queue.pop();
         }
+
+        // If suite is not done yet, don't proceed with the loop
+        if (suite.status == 'done')
+          suite = queue.pop();
       }, 100);
     }
   };

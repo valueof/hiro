@@ -1,29 +1,56 @@
-hiro.module('demo', {
-    setUp: function () {
-        this.loadFixture('demo');
-    },
+hiro.module('genericTests', {
+  // This tests must all pass
 
-    waitFor: function () {
-        return this.window.isReady;
-    },
+  setUp: function () {
+      this.loadFixture('demo');
+  },
 
-    testEcho: function () {
-        var message = 'ping';
-        var echo    = this.window.echo;
-        this.assertEqual(echo(message), message);
-    },
+  waitFor: function () {
+      return this.window.isReady;
+  },
 
-    testTrue: function () {
-        this.assertTrue(true);
-    },
+  /*
+   * Test basic assertions
+   */
+  testAsserts: function () {
+    function Error() {}
+    function exc() { throw new Error(); }
+    function noexc() { return; }
 
-    testAsync: function () {
-        this.expect(1);
+    this.expect(4);
+    this.assertTrue(true);
+    this.assertEqual('test', 'test');
+    this.assertException(exc, Error);
+    this.assertNoException(noexc);
+  },
 
-        var that = this;
-        this.pause();
-        setTimeout(function () {
-            that.assertTrue(true);
-        }, 500);
-    }
+  /*
+   * Make sure that we can access objects from the inside of sandbox,
+   * and that those objects don't have any effect on the outer
+   * environment.
+   */
+  testSandbox: function () {
+    var message = 'ping';
+    var echo    = this.window.echo;
+
+    this.expect(2);
+    this.assertEqual(echo(message), message);
+    this.assertTrue(window.echo == null)
+  },
+
+  /*
+   * Test async execution model (tests can pause the execution by calling
+   * the .pause() method; they have to call .resume() method afterwards)
+   */
+  testAsyncExecution: function () {
+    this.expect(1);
+
+    var that = this;
+    this.pause();
+
+    setTimeout(function () {
+      that.assertTrue(true);
+      that.resume();
+    }, 500);
+  }
 });
