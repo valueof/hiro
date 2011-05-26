@@ -226,8 +226,11 @@ var hiro = (function (window, undefined) {
         return false;
       }
 
-      if (this.asserts_.expected != this.asserts_.actual) {
-        hiro.logger.error('Not all assertions were executed');
+      var exp = this.asserts_.expected;
+      var act = this.asserts_.actual;
+
+      if (exp != act) {
+        hiro.logger.error(exp, 'were expected but', act, 'were executed');
         return false;
       }
 

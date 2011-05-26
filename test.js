@@ -106,7 +106,7 @@ hiro.module('LoggerTests', {
   }
 });
 
-hiro.module('TestTestRunner', {
+hiro.module('TestRunnerTests', {
   setUp:   function () { this.loadFixture('hirojs'); },
   waitFor: function () { return this.window.hiro != null; },
 
@@ -182,5 +182,94 @@ hiro.module('TestTestRunner', {
 
       that.resume();
     }, 1000);
+  },
+
+  testFailedRun: function () {
+    var output = [];
+    var hiro_  = this.window.hiro;
+    var Test   = hiro_.internals_.Test;
+    var Suite  = hiro_.internals_.Suite;
+    var test   = new Test('testDummy', testCase, new Suite('test', {}));
+
+    function testCase() {
+      this.expect(1);
+      this.assertTrue(false);
+    }
+
+    function log() {
+      output.push(Array.prototype.join.call(arguments, ' '));
+    }
+
+    hiro_.changeTimeout(500);
+    hiro_.logger.info = log;
+    hiro_.logger.success = log;
+    hiro_.logger.error = log;
+
+    this.expect(13);
+
+    this.assertEqual(test.status, 'ready');
+    this.assertTrue(!test.failed);
+    this.assertTrue(!test.paused);
+    this.assertTrue(test.snapshot == null);
+
+    test.run();
+    this.assertEqual(test.status, 'done');
+    this.assertTrue(test.snapshot != null);
+    this.assertTrue(!test.paused);
+    this.assertTrue(test.failed);
+
+    this.assertTrue(!test.report_());
+    this.assertEqual(output.length, 3);
+    this.assertEqual(output[0], 'Running test test.testDummy');
+    this.assertEqual(output[1], 'false is not truthy')
+    this.assertEqual(output[2], 'Test test.testDummy failed');
   }
 });
+
+hiro.module('SuiteTests', {
+  setUp:   function () { this.loadFixture('hirojs'); },
+  waitFor: function () { return this.window.hiro != null; },
+
+  testRun: function () {
+    var output = [];
+    var hiro_  = this.window.hiro;
+    var Test   = hiro_.internals_.Test;
+    var Suite  = hiro_.internals_.Suite;
+
+    function log() {
+      output.push(Array.prototype.join.call(arguments, ' '));
+    }
+
+    hiro_.changeTimeout(500);
+    hiro_.logger.info = log;
+    hiro_.logger.success = log;
+    hiro_.logger.error = log;
+
+    var suite = new Suite('test', {
+      testHello: function () {}
+    });
+
+    this.expect(8);
+
+    this.assertEqual(suite.name, 'test');
+    this.assertTrue(typeof suite.methods.testHello == 'function');
+    this.assertTrue(suite.status == null);
+
+    suite.setUp_();
+    this.assertEqual(suite.status, 'ready');
+
+    suite.run();
+    this.pause();
+
+    var that = this;
+    setTimeout(function () {
+      that.assertEqual(suite.status, 'finished');
+
+      suite.tearDown_();
+      that.assertTrue(suite.report_());
+      that.assertEqual(suite.status, 'done');
+      that.assertEqual(output.length, 3);
+      that.resume();
+    }, 300);
+  }
+})
