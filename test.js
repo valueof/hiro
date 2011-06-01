@@ -79,6 +79,14 @@ hiro.module('GenericTests', {
       that.assertTrue(true);
       that.resume();
     }, 500);
+  },
+
+  /*
+   * Test getFixture method
+   */
+  testGetFixture: function () {
+    this.expect(1);
+    this.assertEqual(this.getFixture('test'), 'Test.');
   }
 });
 

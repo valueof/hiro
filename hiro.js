@@ -277,6 +277,16 @@ var hiro = (function (window, undefined) {
       }
     },
 
+    getFixture: function (name) {
+      /*jshint boss: true */
+      var els = document.getElementsByTagName('textarea');
+
+      for (var i = 0, el; el = els[i]; i++) {
+        if (el.className == 'fixture' && el.getAttribute('data-name') == name)
+          return el.value;
+      }
+    },
+
     expect: function (num) {
       this.asserts_.check = true;
       this.asserts_.expected = num;
