@@ -1,3 +1,6 @@
+/*jshint undef:true, browser: true, maxlen: 80, eqnull: true, latedef: true */
+/*global hiro:false */
+
 hiro.module('GenericTests', {
   setUp: function () {
     this.loadFixture('simple');
@@ -28,7 +31,7 @@ hiro.module('GenericTests', {
 
     this.kungFuReversed_(function () {
       this.assertFalse(true);
-    })
+    });
 
     this.kungFuReversed_(function () {
       this.assertEqual('test', 'hey');
@@ -59,7 +62,7 @@ hiro.module('GenericTests', {
 
     this.expect(2);
     this.assertEqual(echo(message), message);
-    this.assertTrue(window.echo == null)
+    this.assertTrue(window.echo == null);
   },
 
   /*
@@ -91,7 +94,7 @@ hiro.module('LoggerTests', {
       return doc.getElementsByTagName('P', doc.getElementById('console'));
     }
 
-    this.expect(10)
+    this.expect(10);
     this.assertEqual(getLines().length, 1);
     this.assertEqual(getLines()[0].innerHTML, 'Ready.');
 
@@ -120,13 +123,14 @@ hiro.module('TestRunnerTests', {
     var hiro_  = this.window.hiro;
     var Test   = hiro_.internals_.Test;
     var Suite  = hiro_.internals_.Suite;
-    var test   = new Test('testDummy', testCase, new Suite('test', {}));
 
     function testCase() {
       this.expect(1);
       this.assertTrue(true);
       this.pause();
     }
+
+    var test = new Test('testDummy', testCase, new Suite('test', {}));
 
     function log() {
       output.push(Array.prototype.join.call(arguments, ' '));
@@ -194,12 +198,13 @@ hiro.module('TestRunnerTests', {
     var hiro_  = this.window.hiro;
     var Test   = hiro_.internals_.Test;
     var Suite  = hiro_.internals_.Suite;
-    var test   = new Test('testDummy', testCase, new Suite('test', {}));
 
     function testCase() {
       this.expect(1);
       this.assertTrue(false);
     }
+
+    var test = new Test('testDummy', testCase, new Suite('test', {}));
 
     function log() {
       output.push(Array.prototype.join.call(arguments, ' '));
@@ -226,7 +231,7 @@ hiro.module('TestRunnerTests', {
     this.assertTrue(!test.report_());
     this.assertEqual(output.length, 3);
     this.assertEqual(output[0], 'Running testDummy');
-    this.assertEqual(output[1], 'false is not truthy')
+    this.assertEqual(output[1], 'false is not truthy');
     this.assertEqual(output[2], 'testDummy failed');
   },
 
@@ -235,13 +240,14 @@ hiro.module('TestRunnerTests', {
     var hiro_  = this.window.hiro;
     var Test   = hiro_.internals_.Test;
     var Suite  = hiro_.internals_.Suite;
-    var test   = new Test('testDummy', testCase, new Suite('test', {}));
 
     function testCase() {
       this.expect(3);
       this.assertEqual("a", "a");
       this.assertTrue(true);
     }
+
+    var test = new Test('testDummy', testCase, new Suite('test', {}));
 
     function log() {
       output.push(Array.prototype.join.call(arguments, ' '));
@@ -276,11 +282,12 @@ hiro.module('TestRunnerTests', {
     var hiro_  = this.window.hiro;
     var Test   = hiro_.internals_.Test;
     var Suite  = hiro_.internals_.Suite;
-    var test   = new Test('testDummy', testCase, new Suite('test', {}));
 
     function testCase() {
       this.assertTrue(true);
     }
+
+    var test = new Test('testDummy', testCase, new Suite('test', {}));
 
     function log() {
       output.push(Array.prototype.join.call(arguments, ' '));
@@ -357,4 +364,4 @@ hiro.module('SuiteTests', {
       that.resume();
     }, 300);
   }
-})
+});
