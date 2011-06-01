@@ -160,7 +160,7 @@ var hiro = (function (window, undefined) {
         queue = [ new Test(testName, self.methods[testName], self) ];
       }
 
-      test = queue.pop();
+      test = queue.shift();
       self.status = 'running';
       self.snapshot = timestamp();
 
@@ -182,7 +182,7 @@ var hiro = (function (window, undefined) {
         // Test is done executing
         if (test.status == 'done') {
           self.report[test.name] = test.report_();
-          test = queue.pop();
+          test = queue.shift();
         }
       }, 100);
     }
@@ -446,7 +446,7 @@ var hiro = (function (window, undefined) {
         queue = [ suites[suiteName] ];
       }
 
-      suite = queue.pop();
+      suite = queue.shift();
 
       var interval = setInterval(function () {
         if (suite == null)
@@ -488,7 +488,7 @@ var hiro = (function (window, undefined) {
 
         // If suite is not done yet, don't proceed with the loop
         if (suite.status == 'done')
-          suite = queue.pop();
+          suite = queue.shift();
       }, 100);
     }
   };
