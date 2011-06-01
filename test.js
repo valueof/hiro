@@ -15,8 +15,9 @@ hiro.module('GenericTests', {
     function exc() { throw new Error(); }
     function noexc() { return; }
 
-    this.expect(9);
+    this.expect(11);
     this.assertTrue(true);
+    this.assertFalse(false);
     this.assertEqual('test', 'test');
     this.assertException(exc, Error);
     this.assertNoException(noexc);
@@ -24,6 +25,10 @@ hiro.module('GenericTests', {
     this.kungFuReversed_(function () {
       this.assertTrue(false);
     });
+
+    this.kungFuReversed_(function () {
+      this.assertFalse(true);
+    })
 
     this.kungFuReversed_(function () {
       this.assertEqual('test', 'hey');

@@ -313,6 +313,11 @@ var hiro = (function (window, undefined) {
         this.fail_(value + ' is not truthy');
     },
 
+    assertFalse: function (value) {
+      if (value)
+        this.fail_(value + ' is not falsey');
+    },
+
     assertEqual: function (expected, actual) {
       if (expected !== actual)
         this.fail_(expected + ' != ' + actual);
