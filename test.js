@@ -323,6 +323,56 @@ hiro.module('TestRunnerTests', {
     this.assertEqual(output.length, 2);
     this.assertEqual(output[0], 'Running testDummy');
     this.assertEqual(output[1], 'testDummy succeeded');
+  },
+
+  testEventOnRun: function () {
+    var output = [];
+    var hiro_  = this.window.hiro;
+    var Test   = hiro_.internals_.Test;
+    var Suite  = hiro_.internals_.Suite;
+    var suite  = new Suite('test', {});
+    var that   = this;
+
+    function testCase(a, b) {
+      this.assertTrue(true);
+
+      that.assertTrue(this.testValue);
+      that.assertEqual(a, 1);
+      that.assertEqual(b, 2);
+    }
+
+    var test = new Test('testDummy', testCase, suite);
+    suite.bind('test.onRun', function () {
+      this.testValue = true;
+      return [1, 2];
+    });
+
+    function log() {
+      output.push(Array.prototype.join.call(arguments, ' '));
+    }
+
+    hiro_.changeTimeout(500);
+    hiro_.logger.info = log;
+    hiro_.logger.success = log;
+    hiro_.logger.error = log;
+
+    this.expect(15);
+
+    this.assertEqual(test.name, 'testDummy');
+    this.assertEqual(test.status, 'ready');
+    this.assertTrue(!test.failed);
+    this.assertTrue(!test.paused);
+    this.assertTrue(test.snapshot == null);
+
+    test.run();
+    this.assertEqual(test.status, 'done');
+    this.assertTrue(!test.failed);
+    this.assertTrue(!test.paused);
+
+    this.assertTrue(test.report_());
+    this.assertEqual(output.length, 2);
+    this.assertEqual(output[0], 'Running testDummy');
+    this.assertEqual(output[1], 'testDummy succeeded');
   }
 });
 

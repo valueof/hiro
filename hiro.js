@@ -45,6 +45,11 @@ var hiro = (function (window, undefined) {
     this.frame    = null;
     this.window   = null;
     this.document = null;
+
+    // Suite and Test events
+    this.events   = {
+      'test.onRun': function () {}
+    };
   };
 
   Suite.prototype = {
@@ -141,6 +146,14 @@ var hiro = (function (window, undefined) {
         if (el.className == 'fixture' && el.getAttribute('data-name') == name)
           this.env = el.value;
       }
+    },
+
+    bind: function (name, listener) {
+      this.events[name] = listener;
+    },
+
+    trigger: function (name, context) {
+      return this.events[name].apply(context);
     },
 
     run: function (testName) {
@@ -297,8 +310,10 @@ var hiro = (function (window, undefined) {
       hiro.logger.info('Running', this.name);
       hiro.logger.indented = false;
 
+      var args = this.suite.trigger('test.onRun', this);
+
       this.status = 'running';
-      this.func.call(this);
+      this.func.apply(this, args || []);
       this.snapshot = timestamp();
 
       if (!this.paused)
