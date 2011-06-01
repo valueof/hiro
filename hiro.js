@@ -201,6 +201,7 @@ var hiro = (function (window, undefined) {
     this.document = this.suite.document;
 
     this.asserts_ = {
+      check:    false,
       expected: 0,
       actual:   0
     };
@@ -234,10 +235,11 @@ var hiro = (function (window, undefined) {
         return false;
       }
 
+      var chk = this.asserts_.check;
       var exp = this.asserts_.expected;
       var act = this.asserts_.actual;
 
-      if (exp != act) {
+      if (chk && exp != act) {
         hiro.logger.indented = true;
         hiro.logger.error(exp, 'were expected but', act, 'were executed');
         hiro.logger.indented = false;
@@ -276,6 +278,7 @@ var hiro = (function (window, undefined) {
     },
 
     expect: function (num) {
+      this.asserts_.check = true;
       this.asserts_.expected = num;
     },
 

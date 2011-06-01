@@ -228,6 +228,86 @@ hiro.module('TestRunnerTests', {
     this.assertEqual(output[0], 'Running testDummy');
     this.assertEqual(output[1], 'false is not truthy')
     this.assertEqual(output[2], 'testDummy failed');
+  },
+
+  testNotAllAssertions: function () {
+    var output = [];
+    var hiro_  = this.window.hiro;
+    var Test   = hiro_.internals_.Test;
+    var Suite  = hiro_.internals_.Suite;
+    var test   = new Test('testDummy', testCase, new Suite('test', {}));
+
+    function testCase() {
+      this.expect(3);
+      this.assertEqual("a", "a");
+      this.assertTrue(true);
+    }
+
+    function log() {
+      output.push(Array.prototype.join.call(arguments, ' '));
+    }
+
+    hiro_.changeTimeout(500);
+    hiro_.logger.info = log;
+    hiro_.logger.success = log;
+    hiro_.logger.error = log;
+
+    this.expect(12);
+
+    this.assertEqual(test.status, 'ready');
+    this.assertFalse(test.failed);
+    this.assertFalse(test.paused);
+    this.assertTrue(test.snapshot == null);
+
+    test.run();
+    this.assertEqual(test.status, 'done');
+    this.assertTrue(test.snapshot != null);
+    this.assertFalse(test.paused);
+    this.assertFalse(test.failed);
+
+    this.assertFalse(test.report_());
+    this.assertEqual(output.length, 2);
+    this.assertEqual(output[0], 'Running testDummy');
+    this.assertEqual(output[1], '3 were expected but 2 were executed');
+  },
+
+  testSkipAssertionsCheck: function () {
+    var output = [];
+    var hiro_  = this.window.hiro;
+    var Test   = hiro_.internals_.Test;
+    var Suite  = hiro_.internals_.Suite;
+    var test   = new Test('testDummy', testCase, new Suite('test', {}));
+
+    function testCase() {
+      this.assertTrue(true);
+    }
+
+    function log() {
+      output.push(Array.prototype.join.call(arguments, ' '));
+    }
+
+    hiro_.changeTimeout(500);
+    hiro_.logger.info = log;
+    hiro_.logger.success = log;
+    hiro_.logger.error = log;
+
+    this.expect(12);
+
+    this.assertEqual(test.name, 'testDummy');
+    this.assertEqual(test.status, 'ready');
+    this.assertTrue(!test.failed);
+    this.assertTrue(!test.paused);
+    this.assertTrue(test.snapshot == null);
+
+    test.run();
+    this.assertEqual(test.status, 'done');
+    this.assertTrue(!test.failed);
+    this.assertTrue(!test.paused);
+
+    this.assertTrue(test.report_());
+    this.assertEqual(output.length, 2);
+    this.assertEqual(output[0], 'Running testDummy');
+    this.assertEqual(output[1], 'testDummy succeeded');
   }
 });
 
