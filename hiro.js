@@ -33,10 +33,16 @@ var hiro = (function (window, undefined) {
     return Date.UTC.apply(null, args);
   }
 
+  function getSuite(name) {
+    return suites[name];
+  }
+
   Suite = function (name, methods) {
+    /*jshint boss: true */
+
     this.name     = name;
-    this.methods  = methods;
     this.report   = {};
+    this.methods  = {};
     this.env      = '';
     this.status   = null;
     this.snapshot = null;
@@ -50,6 +56,20 @@ var hiro = (function (window, undefined) {
     this.events   = {
       'test.onRun': function () {}
     };
+
+    var that = this;
+
+    if (methods.mixin && methods.mixin.length) {
+      for (var i = 0, suiteName; suiteName = methods.mixin[i]; i++) {
+        each(suites[suiteName].methods, function (value, key) {
+          that.methods[key] = value;
+        });
+      }
+    }
+
+    each(methods, function (value, key) {
+      that.methods[key] = value;
+    });
   };
 
   Suite.prototype = {
@@ -423,8 +443,9 @@ var hiro = (function (window, undefined) {
     // We're exposing private objects for unit tests.
     // NOBODY should use them outside of unit tests.
     internals_: {
-      Suite:   Suite,
-      Test:    Test
+      Suite:    Suite,
+      Test:     Test,
+      getSuite: getSuite
     },
 
     logger: new Logger(),

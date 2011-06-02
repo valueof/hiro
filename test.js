@@ -421,5 +421,38 @@ hiro.module('SuiteTests', {
       that.assertEqual(output.length, 3);
       that.resume();
     }, 300);
+  },
+
+  testMixin: function () {
+    var output = [];
+    var hiro_  = this.window.hiro;
+    var Suite  = hiro_.internals_.Suite;
+
+    function log() {
+      output.push(Array.prototype.join.call(arguments, ' '));
+    }
+
+    hiro_.changeTimeout(500);
+    hiro_.logger.info = log;
+    hiro_.logger.success = log;
+    hiro_.logger.error = log;
+
+    hiro_.module('parent', {
+      testHello: function () {}
+    });
+
+    hiro_.module('child', {
+      mixin:    ['parent'],
+      testOhai: function () {}
+    });
+
+    var parent = hiro_.internals_.getSuite('parent');
+    var child  = hiro_.internals_.getSuite('child');
+
+    this.assertTrue(typeof parent.methods.testHello == 'function');
+    this.assertTrue(parent.methods.testOhai == null);
+    this.assertTrue(typeof child.methods.testHello == 'function');
+    this.assertTrue(typeof child.methods.testOhai == 'function');
+    this.assertEqual(child.methods.mixin[0], 'parent');
   }
 });
