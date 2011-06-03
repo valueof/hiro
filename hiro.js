@@ -379,12 +379,12 @@ var hiro = (function (window, undefined) {
       }
     },
 
-    assertException: function (func, expectedException) {
+    assertException: function (func, expected) {
       try {
         func();
         this.fail_('Expected exception');
       } catch (exc) {
-        if (!(exc instanceof expectedException))
+        if (expected && !(exc instanceof expected))
           this.fail_('Wrong exception has been thrown');
       }
     }
