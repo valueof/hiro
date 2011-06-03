@@ -216,6 +216,7 @@ var hiro = (function (window, undefined) {
         if (test.status == 'done') {
           self.report[test.name] = test.report_();
           test = queue.shift();
+          self.snapshot = timestamp();
         }
       }, 100);
     }
