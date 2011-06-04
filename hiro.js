@@ -1,4 +1,4 @@
-/*jshint undef:true, browser:true, maxlen: 80, loopfunc:true, strict: true, eqnull: true */
+/*jshint undef:true, browser:true, maxlen:80, loopfunc:true, strict:true, eqnull:true */
 
 var hiro = (function (window, undefined) {
   "use strict";
@@ -107,6 +107,15 @@ var hiro = (function (window, undefined) {
         self.document.close();
       }
 
+      if (self.methods.onTest) {
+        self.onTest_ = function (test) {
+          if (test.suite.name == self.name)
+            self.methods.onTest.apply(test);
+        };
+
+        hiro.bind('test.onStart', self.onTest_);
+      }
+
       if (self.methods.waitFor) {
         self.status = 'waiting';
         self.snapshot = timestamp();
@@ -137,10 +146,15 @@ var hiro = (function (window, undefined) {
 
     complete_: function () {
       if (this.status == 'finished') {
+        // Tear down
         if (this.frame) {
           this.window = null;
           this.document = null;
           document.body.removeChild(this.frame);
+        }
+
+        if (this.methods.onTest) {
+          hiro.unbind('test.onStart', this.onTest_);
         }
 
         this.status = 'done';
@@ -240,8 +254,8 @@ var hiro = (function (window, undefined) {
   };
 
   Test.prototype = {
-    fail_: function (message) {
-      hiro.trigger('test.onFailure', [ this, message ]);
+    fail_: function (assertion) {
+      hiro.trigger('test.onFailure', [ this, assertion ]);
       this.failed = true;
     },
 
@@ -321,34 +335,34 @@ var hiro = (function (window, undefined) {
   var asserts = {
     assertTrue: function (value) {
       if (!value)
-        this.fail_(value + ' is not truthy');
+        this.fail_('assertTrue');
     },
 
     assertFalse: function (value) {
       if (value)
-        this.fail_(value + ' is not falsey');
+        this.fail_('assertFalse');
     },
 
     assertEqual: function (expected, actual) {
       if (expected !== actual)
-        this.fail_(expected + ' != ' + actual);
+        this.fail_('assertEqual');
     },
 
     assertNoException: function (func) {
       try {
         func();
       } catch (exc) {
-        this.fail_('Exception ' + exc.toString() + ' has been thrown');
+        this.fail_('assertNoException');
       }
     },
 
     assertException: function (func, expected) {
       try {
         func();
-        this.fail_('Expected exception');
+        this.fail_('assertException');
       } catch (exc) {
         if (expected && !(exc instanceof expected))
-          this.fail_('Wrong exception has been thrown');
+          this.fail_('assertException');
       }
     }
   };
@@ -395,7 +409,32 @@ var hiro = (function (window, undefined) {
       return true;
     },
 
+    once: function (name, handler) {
+      function wrapper() {
+        handler.apply({}, arguments);
+        hiro.unbind(name, wrapper);
+      }
+
+      return hiro.bind(name, wrapper);
+    },
+
+    unbind: function (name, handler) {
+      /*jshint boss:true */
+
+      if (events[name] === undefined)
+        return;
+
+      for (var i = 0, h; h = events[name][i]; i++) {
+        if (h == handler) {
+          events[name].splice(i, 1);
+          return;
+        }
+      }
+    },
+
     trigger: function (name, args) {
+      /*jshint boss:true */
+
       if (events[name] === undefined)
         return;
 

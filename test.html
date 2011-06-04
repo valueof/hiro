@@ -5,7 +5,7 @@
     <title>Hiro Tests</title>
 
     <link rel="stylesheet" href="hiro.css">
-    <script src="lib/qwery.js"></script>
+    <script src="lib/ender.js"></script>
     <script src="hiro.js"></script>
     <script src="web.js"></script>
   </head>
@@ -24,7 +24,7 @@
       (music, movies, microcode)
     </div>
 
-    <textarea class="fixture" data-name="simple">
+    <textarea class="fixture" data-name="hirojs">
       <html>
         <head>
           <script>
@@ -34,6 +34,8 @@
               return message;
             }
           </script>
+
+          <script src="hiro.js"></script>
         </head>
 
         <body>
@@ -42,62 +44,7 @@
       </html>
     </textarea>
 
-    <textarea class="fixture" data-name="hirojs">
-      <html>
-        <head>
-          <script src="hiro.js"></script>
-        </head>
-
-        <body>
-          <div id="report" class="idle">
-            <div id="console">
-              <p>Ready.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    </textarea>
-
     <textarea class="fixture" data-name="test">Test.</textarea>
-
-    <script>
-    hiro.module('SimpleTests', {
-      setUp: function () {
-        this.loadFixture('simple');
-      },
-
-      waitFor: function () {
-        return this.window.isReady;
-      },
-
-      testSimple: function () {
-        this.assertTrue(true);
-      },
-
-      testFailure: function () {
-        this.assertTrue(false);
-      }
-    });
-
-    hiro.module('OtherTests', {
-      setUp: function () {
-        this.loadFixture('simple');
-      },
-
-      waitFor: function () {
-        return this.window.isReady;
-      },
-
-      testSimple: function () {
-        this.assertTrue(true);
-      },
-
-      testAgain: function () {
-        this.assertFalse(false);
-      }
-    });
-    </script>
-
-    <!--<script src="test.js"></script>-->
+    <script src="test.js"></script>
   </body>
 </html>

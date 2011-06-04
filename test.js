@@ -1,19 +1,31 @@
-/*jshint undef:true, browser: true, maxlen: 80, eqnull: true, latedef: true */
+/*jshint undef:true, browser:true, maxlen:80, eqnull:true, latedef:true */
 /*global hiro:false */
 
 hiro.module('GenericTests', {
   setUp: function () {
-    this.loadFixture('simple');
+    this.loadFixture('hirojs');
   },
 
   waitFor: function () {
     return this.window.isReady;
   },
 
+  onTest: function () {
+    var hiro_ = this.window.hiro;
+    this.args = [ hiro_, hiro_.internals_.Test, hiro_.internals_.Suite ];
+  },
+
   /*
    * Test basic assertions
    */
-  testAsserts: function () {
+  testAsserts: function (hiro_, Test, Suite) {
+    var that = this;
+
+    function test(fn) {
+      var test_ = new Test('testDummy', fn, new Suite('test', {}));
+      test_.run();
+    }
+
     function Error() {}
     function exc() { throw new Error(); }
     function noexc() { return; }
@@ -25,29 +37,59 @@ hiro.module('GenericTests', {
     this.assertException(exc, Error);
     this.assertNoException(noexc);
 
-    this.kungFuReversed_(function () {
+    // assertTrue
+    hiro_.once('test.onFailure', function (test, assertion) {
+      that.assertEqual(assertion, 'assertTrue');
+    });
+
+    test(function () {
       this.assertTrue(false);
     });
 
-    this.kungFuReversed_(function () {
+    // assertFalse
+    hiro_.once('test.onFailure', function (test, assertion) {
+      that.assertEqual(assertion, 'assertFalse');
+    });
+
+    test(function () {
       this.assertFalse(true);
     });
 
-    this.kungFuReversed_(function () {
-      this.assertEqual('test', 'hey');
+    // assertEqual
+    hiro_.once('test.onFailure', function (test, assertion) {
+      that.assertEqual(assertion, 'assertEqual');
     });
 
-    this.kungFuReversed_(function () {
+    test(function () {
+      this.assertEqual('foo', 'bar');
+    });
+
+    // assertException without an exception
+    hiro_.once('test.onFailure', function (test, assertion) {
+      that.assertEqual(assertion, 'assertException');
+    });
+
+    test(function () {
       this.assertException(noexc);
     });
 
-    this.kungFuReversed_(function () {
+    // assertException with unexpected exception
+    hiro_.once('test.onFailure', function (test, assertion) {
+      that.assertEqual(assertion, 'assertException');
+    });
+
+    test(function () {
       function WrongError() {}
       this.assertException(exc, WrongError);
     });
 
-    this.kungFuReversed_(function () {
-      try { this.assertNoException(exc); } catch (e) {}
+    // assertNoException with an exception
+    hiro_.once('test.onFailure', function (test, assertion) {
+      that.assertEqual(assertion, 'assertNoException');
+    });
+
+    test(function () {
+      this.assertNoException(exc);
     });
   },
 
@@ -84,53 +126,28 @@ hiro.module('GenericTests', {
   /*
    * Test getFixture method
    */
-  testGetFixture: function () {
+  testAssertstestGetFixture: function () {
     this.expect(1);
     this.assertEqual(this.getFixture('test'), 'Test.');
   }
 });
 
-hiro.module('LoggerTests', {
-  setUp: function () { this.loadFixture('hirojs'); },
-  waitFor: function () { return this.window.hiro != null; },
-
-  testLogger: function () {
-    var doc   = this.document;
-    var hiro_ = this.window.hiro;
-
-    function getLines() {
-      return doc.getElementsByTagName('P', doc.getElementById('console'));
-    }
-
-    this.expect(10);
-    this.assertEqual(getLines().length, 1);
-    this.assertEqual(getLines()[0].innerHTML, 'Ready.');
-
-    hiro_.logger.info('test', 'message');
-    this.assertEqual(getLines().length, 2);
-    this.assertEqual(getLines()[1].innerHTML, 'test message');
-
-    hiro_.logger.error('test', 'error');
-    this.assertEqual(getLines().length, 3);
-    this.assertEqual(getLines()[2].innerHTML, 'test error');
-    this.assertEqual(getLines()[2].className, 'fail');
-
-    hiro_.logger.success('test', 'success');
-    this.assertEqual(getLines().length, 4);
-    this.assertEqual(getLines()[3].innerHTML, 'test success');
-    this.assertEqual(getLines()[3].className, 'succ');
-  }
-});
-
 hiro.module('TestRunnerTests', {
-  setUp:   function () { this.loadFixture('hirojs'); },
-  waitFor: function () { return this.window.hiro != null; },
+  setUp:   function () {
+    this.loadFixture('hirojs');
+  },
 
-  testRun: function () {
-    var output = [];
-    var hiro_  = this.window.hiro;
-    var Test   = hiro_.internals_.Test;
-    var Suite  = hiro_.internals_.Suite;
+  waitFor: function () {
+    return this.window.hiro != null;
+  },
+
+  onTest: function () {
+    var hiro_ = this.window.hiro;
+    this.args = [ hiro_, hiro_.internals_.Test, hiro_.internals_.Suite ];
+  },
+
+  testRun: function (hiro_, Test, Suite) {
+    var that = this;
 
     function testCase() {
       this.expect(1);
@@ -140,21 +157,24 @@ hiro.module('TestRunnerTests', {
 
     var test = new Test('testDummy', testCase, new Suite('test', {}));
 
-    function log() {
-      output.push(Array.prototype.join.call(arguments, ' '));
-    }
-
     hiro_.changeTimeout(500);
-    hiro_.logger.info = log;
-    hiro_.logger.success = log;
-    hiro_.logger.error = log;
+    this.expect(23);
 
-    this.expect(24);
+    // Test successful test
+
+    hiro_.once('test.onStart', function (test) {
+      that.assertEqual(test.name, 'testDummy');
+    });
+
+    hiro_.once('test.onComplete', function (test, success) {
+      that.assertEqual(test.name, 'testDummy');
+      that.assertTrue(success);
+    });
 
     this.assertEqual(test.name, 'testDummy');
     this.assertEqual(test.status, 'ready');
-    this.assertTrue(!test.failed);
-    this.assertTrue(!test.paused);
+    this.assertFalse(test.failed);
+    this.assertFalse(test.paused);
     this.assertTrue(test.snapshot == null);
 
     test.run();
@@ -164,16 +184,21 @@ hiro.module('TestRunnerTests', {
 
     test.resume();
     this.assertEqual(test.status, 'done');
-    this.assertTrue(!test.failed);
-    this.assertTrue(!test.paused);
+    this.assertFalse(test.failed);
+    this.assertFalse(test.paused);
+    this.assertTrue(test.complete_());
 
-    this.assertTrue(test.report_());
-    this.assertEqual(output.length, 2);
-    this.assertEqual(output[0], 'Running testDummy');
-    this.assertEqual(output[1], 'testDummy succeeded');
 
     // Test timed out test
-    output = [];
+
+    hiro_.once('test.onStart', function (test) {
+      that.assertEqual(test.name, 'testDummy');
+    });
+
+    hiro_.once('test.onTimeout', function (test) {
+      that.assertEqual(test.name, 'testDummy');
+    });
+
     test.status = 'ready';
     test.failed = false;
     test.paused = false;
@@ -185,69 +210,50 @@ hiro.module('TestRunnerTests', {
     this.assertTrue(test.paused);
 
     this.pause();
-
-    var that = this;
     setTimeout(function () {
       that.assertTrue(test.timedout_());
       test.status = 'done';
       that.assertTrue(test.paused);
-      that.assertTrue(!test.report_());
-
-      that.assertEqual(output.length, 2);
-      that.assertEqual(output[0], 'Running testDummy');
-      that.assertEqual(output[1], 'testDummy timed out');
-
+      that.assertFalse(test.complete_());
       that.resume();
     }, 1000);
   },
 
-  testFailedRun: function () {
-    var output = [];
-    var hiro_  = this.window.hiro;
-    var Test   = hiro_.internals_.Test;
-    var Suite  = hiro_.internals_.Suite;
+  testFailedRun: function (hiro_, Test, Suite) {
+    var that = this;
+    var test;
 
     function testCase() {
       this.expect(1);
       this.assertTrue(false);
     }
 
-    var test = new Test('testDummy', testCase, new Suite('test', {}));
-
-    function log() {
-      output.push(Array.prototype.join.call(arguments, ' '));
-    }
-
+    test = new Test('testDummy', testCase, new Suite('test', {}));
     hiro_.changeTimeout(500);
-    hiro_.logger.info = log;
-    hiro_.logger.success = log;
-    hiro_.logger.error = log;
+    this.expect(11);
 
-    this.expect(13);
+    hiro_.once('test.onComplete', function (test, success) {
+      that.assertEqual(test.name, 'testDummy');
+      that.assertFalse(success);
+    });
 
     this.assertEqual(test.status, 'ready');
-    this.assertTrue(!test.failed);
-    this.assertTrue(!test.paused);
+    this.assertFalse(test.failed);
+    this.assertFalse(test.paused);
     this.assertTrue(test.snapshot == null);
 
     test.run();
     this.assertEqual(test.status, 'done');
     this.assertTrue(test.snapshot != null);
-    this.assertTrue(!test.paused);
+    this.assertFalse(test.paused);
     this.assertTrue(test.failed);
 
-    this.assertTrue(!test.report_());
-    this.assertEqual(output.length, 3);
-    this.assertEqual(output[0], 'Running testDummy');
-    this.assertEqual(output[1], 'false is not truthy');
-    this.assertEqual(output[2], 'testDummy failed');
+    this.assertFalse(test.complete_());
   },
 
-  testNotAllAssertions: function () {
-    var output = [];
-    var hiro_  = this.window.hiro;
-    var Test   = hiro_.internals_.Test;
-    var Suite  = hiro_.internals_.Suite;
+  testNotAllAssertions: function (hiro_, Test, Suite) {
+    var that = this;
+    var test;
 
     function testCase() {
       this.expect(3);
@@ -255,18 +261,15 @@ hiro.module('TestRunnerTests', {
       this.assertTrue(true);
     }
 
-    var test = new Test('testDummy', testCase, new Suite('test', {}));
-
-    function log() {
-      output.push(Array.prototype.join.call(arguments, ' '));
-    }
-
+    test = new Test('testDummy', testCase, new Suite('test', {}));
     hiro_.changeTimeout(500);
-    hiro_.logger.info = log;
-    hiro_.logger.success = log;
-    hiro_.logger.error = log;
+    this.expect(11);
 
-    this.expect(12);
+    hiro_.once('test.onComplete', function (test, success) {
+      that.assertEqual(test.name, 'testDummy');
+      that.assertFalse(success);
+      // TODO: Check for the report
+    });
 
     this.assertEqual(test.status, 'ready');
     this.assertFalse(test.failed);
@@ -279,59 +282,44 @@ hiro.module('TestRunnerTests', {
     this.assertFalse(test.paused);
     this.assertFalse(test.failed);
 
-    this.assertFalse(test.report_());
-    this.assertEqual(output.length, 2);
-    this.assertEqual(output[0], 'Running testDummy');
-    this.assertEqual(output[1], '3 were expected but 2 were executed');
+    this.assertFalse(test.complete_());
   },
 
-  testSkipAssertionsCheck: function () {
-    var output = [];
-    var hiro_  = this.window.hiro;
-    var Test   = hiro_.internals_.Test;
-    var Suite  = hiro_.internals_.Suite;
+  testSkipAssertionsCheck: function (hiro_, Test, Suite) {
+    var that = this;
+    var test;
 
     function testCase() {
       this.assertTrue(true);
     }
 
-    var test = new Test('testDummy', testCase, new Suite('test', {}));
-
-    function log() {
-      output.push(Array.prototype.join.call(arguments, ' '));
-    }
-
+    test = new Test('testDummy', testCase, new Suite('test', {}));
     hiro_.changeTimeout(500);
-    hiro_.logger.info = log;
-    hiro_.logger.success = log;
-    hiro_.logger.error = log;
+    this.expect(11);
 
-    this.expect(12);
+    hiro_.once('test.onComplete', function (test, success) {
+      that.assertEqual(test.name, 'testDummy');
+      that.assertTrue(success);
+    });
 
     this.assertEqual(test.name, 'testDummy');
     this.assertEqual(test.status, 'ready');
-    this.assertTrue(!test.failed);
-    this.assertTrue(!test.paused);
+    this.assertFalse(test.failed);
+    this.assertFalse(test.paused);
     this.assertTrue(test.snapshot == null);
 
     test.run();
     this.assertEqual(test.status, 'done');
-    this.assertTrue(!test.failed);
-    this.assertTrue(!test.paused);
+    this.assertFalse(test.failed);
+    this.assertFalse(test.paused);
 
-    this.assertTrue(test.report_());
-    this.assertEqual(output.length, 2);
-    this.assertEqual(output[0], 'Running testDummy');
-    this.assertEqual(output[1], 'testDummy succeeded');
+    this.assertTrue(test.complete_());
   },
 
-  testEventOnRun: function () {
-    var output = [];
-    var hiro_  = this.window.hiro;
-    var Test   = hiro_.internals_.Test;
-    var Suite  = hiro_.internals_.Suite;
-    var suite  = new Suite('test', {});
-    var that   = this;
+  testEventOnRun: function (hiro_, Test, Suite) {
+    var suite = new Suite('test', {});
+    var that  = this;
+    var test;
 
     function testCase(a, b) {
       this.assertTrue(true);
@@ -341,65 +329,65 @@ hiro.module('TestRunnerTests', {
       that.assertEqual(b, 2);
     }
 
-    var test = new Test('testDummy', testCase, suite);
-    suite.bind('test.onRun', function () {
-      this.testValue = true;
-      return [1, 2];
-    });
+    test = new Test('testDummy', testCase, suite);
 
-    function log() {
-      output.push(Array.prototype.join.call(arguments, ' '));
-    }
+    suite.methods.onTest = function () {
+      this.testValue = true;
+      this.args = [1, 2];
+    };
+    suite.setUp_();
 
     hiro_.changeTimeout(500);
-    hiro_.logger.info = log;
-    hiro_.logger.success = log;
-    hiro_.logger.error = log;
+    this.expect(14);
 
-    this.expect(15);
+    hiro_.once('test.onComplete', function (test, success) {
+      that.assertEqual(test.name, 'testDummy');
+      that.assertTrue(success);
+    });
 
     this.assertEqual(test.name, 'testDummy');
     this.assertEqual(test.status, 'ready');
-    this.assertTrue(!test.failed);
-    this.assertTrue(!test.paused);
+    this.assertFalse(test.failed);
+    this.assertFalse(test.paused);
     this.assertTrue(test.snapshot == null);
 
     test.run();
     this.assertEqual(test.status, 'done');
-    this.assertTrue(!test.failed);
-    this.assertTrue(!test.paused);
-
-    this.assertTrue(test.report_());
-    this.assertEqual(output.length, 2);
-    this.assertEqual(output[0], 'Running testDummy');
-    this.assertEqual(output[1], 'testDummy succeeded');
+    this.assertFalse(test.failed);
+    this.assertFalse(test.paused);
+    this.assertTrue(test.complete_());
   }
 });
 
 hiro.module('SuiteTests', {
-  setUp:   function () { this.loadFixture('hirojs'); },
-  waitFor: function () { return this.window.hiro != null; },
+  setUp:   function () {
+    this.loadFixture('hirojs');
+  },
 
-  testRun: function () {
-    var output = [];
-    var hiro_  = this.window.hiro;
-    var Test   = hiro_.internals_.Test;
-    var Suite  = hiro_.internals_.Suite;
+  waitFor: function () {
+    return this.window.hiro != null;
+  },
 
-    function log() {
-      output.push(Array.prototype.join.call(arguments, ' '));
-    }
+  onTest: function () {
+    var hiro_ = this.window.hiro;
+    this.args = [ hiro_, hiro_.internals_.Test, hiro_.internals_.Suite ];
+  },
+
+  testRun: function (hiro_, Test, Suite) {
+    var that  = this;
+    var suite = new Suite('test', { testHello: function () {} });
 
     hiro_.changeTimeout(500);
-    hiro_.logger.info = log;
-    hiro_.logger.success = log;
-    hiro_.logger.error = log;
+    this.expect(9);
 
-    var suite = new Suite('test', {
-      testHello: function () {}
+    hiro_.once('suite.onStart', function (suite) {
+      that.assertEqual(suite.name, 'test');
     });
 
-    this.expect(8);
+    hiro_.once('suite.onComplete', function (suite, success) {
+      that.assertEqual(suite.name, 'test');
+      that.assertTrue(success);
+    });
 
     this.assertEqual(suite.name, 'test');
     this.assertTrue(typeof suite.methods.testHello == 'function');
@@ -411,32 +399,14 @@ hiro.module('SuiteTests', {
     suite.run();
     this.pause();
 
-    var that = this;
     setTimeout(function () {
       that.assertEqual(suite.status, 'finished');
-
-      suite.tearDown_();
-      that.assertTrue(suite.report_());
-      that.assertEqual(suite.status, 'done');
-      that.assertEqual(output.length, 3);
+      that.assertTrue(suite.complete_());
       that.resume();
     }, 300);
   },
 
-  testMixin: function () {
-    var output = [];
-    var hiro_  = this.window.hiro;
-    var Suite  = hiro_.internals_.Suite;
-
-    function log() {
-      output.push(Array.prototype.join.call(arguments, ' '));
-    }
-
-    hiro_.changeTimeout(500);
-    hiro_.logger.info = log;
-    hiro_.logger.success = log;
-    hiro_.logger.error = log;
-
+  testMixin: function (hiro_, Test, Suite) {
     hiro_.module('parent', {
       testHello: function () {}
     });

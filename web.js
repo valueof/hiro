@@ -1,16 +1,17 @@
-(function (window, undefined) {
-  var document = window.document;
-  var context  = 'web';
+/*jshint undef:true, browser:true, strict:true, maxlen:80 */
+/*global hiro:false, ender:false */
 
-  function append(el) {
-    qwery('#' + context)[0].appendChild(el);
-  }
+(function (window, undefined) {
+  "use strict";
+
+  var document = window.document;
+  var context  = '#web';
 
   function simple(message) {
-    var el = document.createElement('p');
-    el.className = 'simple';
-    el.innerHTML = message;
-    append(el);
+    ender(document.createElement('p'))
+      .addClass('simple')
+      .html(message)
+      .appendTo(context);
   }
 
   hiro.bind('hiro.onStart', function () {
@@ -22,90 +23,69 @@
   });
 
   hiro.bind('suite.onStart', function (suite) {
-    var div  = document.createElement('div');
-    var name = document.createElement('h2');
-    var uid  = 'hiro_suite_' + suite.name;
+    var uid = 'hiro_suite_' + suite.name;
+    var div = document.createElement('div');
 
-    div.className = 'suite idle';
-    div.id = uid;
-    name.innerHTML = suite.name;
-    div.appendChild(name);
+    ender(div)
+      .addClass('suite')
+      .addClass('idle')
+      .attr('id', uid);
 
-    append(div);
-    context = uid;
+    ender(document.createElement('h2'))
+      .html(suite.name)
+      .appendTo(div);
+
+    ender(context).append(div);
+
+    context = '#' + uid;
   });
 
   hiro.bind('suite.onComplete', function (suite, success) {
-    var el = qwery('#' + context)[0];
+    ender(context)
+      .removeClass('idle')
+      .addClass(success ? 'succ' : 'fail');
 
-    if (success)
-      el.className = el.className.replace('idle', 'succ');
-    else
-      el.className = el.className.replace('idle', 'fail');
+    context = '#web';
+  });
 
-    context = 'web';
+  hiro.bind('suite.onTimeout', function (suite, success) {
+    ender(context)
+      .removeClass('idle')
+      .addClass('fail');
+
+    context = '#web';
   });
 
   hiro.bind('test.onStart', function (test) {
-    var div  = document.createElement('div');
     var uid  = 'hiro_test_' + test.suite.name + '_' + test.name;
 
-    div.className = 'test idle';
-    div.id = uid;
-    div.innerHTML = test.name;
+    ender(document.createElement('div'))
+      .addClass('test')
+      .addClass('idle')
+      .attr('id', uid)
+      .html(test.name)
+      .appendTo(ender(context));
 
-    append(div);
-    context = uid;
+    context = '#' + uid;
+  });
+
+  hiro.bind('test.onFailure', function (test, assertion) {
+    // pass
   });
 
   hiro.bind('test.onComplete', function (test, success) {
-    var el = qwery('#' + context)[0];
+    ender(context)
+      .removeClass('idle')
+      .addClass(success ? 'succ' : 'fail');
 
-    if (success)
-      el.className = el.className.replace('idle', 'succ');
-    else
-      el.className = el.className.replace('idle', 'fail');
+    context = '#hiro_suite_' + test.suite.name;
+  });
 
-    context = 'hiro_suite_' + test.suite.name;
+  hiro.bind('test.onTimeout', function (test, success) {
+    ender(context)
+      .removeClass('idle')
+      .addClass('fail');
+
+    context = '#hiro_suite_' + test.suite.name;
   });
 }(window));
-
-/*
-  Logger = function (el) {
-    this.container = el;
-    this.indented  = false;
-  };
-
-  Logger.prototype = {
-    write_: function (args, className) {
-      var msg  = Array.prototype.join.call(args, ' ');
-      var line = document.createElement('p');
-      var cons = document.getElementById('console');
-
-      line.innerHTML = msg;
-
-      if (className)
-        line.className = className;
-
-      if (this.indented)
-        line.className += ' indented';
-
-      cons.appendChild(line);
-    },
-
-    title: function () {
-      this.write_(arguments, 'title');
-    },
-
-    info: function () {
-      this.write_(arguments);
-    },
-
-    error: function () {
-      this.write_(arguments, 'fail');
-    },
-
-    success: function () {
-      this.write_(arguments, 'succ');
-    }
-  };*/
