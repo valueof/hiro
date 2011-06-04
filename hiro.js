@@ -17,7 +17,7 @@ var hiro = (function (window, undefined) {
     'suite.onTimeout':  [], // (suite)
 
     'test.onStart':     [], // (test)
-    'test.onFailure':   [], // (test, assertion, place)
+    'test.onFailure':   [], // (test, report)
     'test.onComplete':  [], // (test, success, report)
     'test.onTimeout':   []  // (test)
   };
@@ -254,8 +254,8 @@ var hiro = (function (window, undefined) {
   };
 
   Test.prototype = {
-    fail_: function (assertion) {
-      hiro.trigger('test.onFailure', [ this, assertion ]);
+    fail_: function (report) {
+      hiro.trigger('test.onFailure', [ this, report ]);
       this.failed = true;
     },
 
@@ -334,35 +334,58 @@ var hiro = (function (window, undefined) {
 
   var asserts = {
     assertTrue: function (value) {
-      if (!value)
-        this.fail_('assertTrue');
+      if (value)
+        return;
+
+      this.fail_({ assertion: 'assertTrue', result: value });
     },
 
     assertFalse: function (value) {
-      if (value)
-        this.fail_('assertFalse');
+      if (!value)
+        return;
+
+      this.fail_({ assertion: 'assertFalse', result: value });
     },
 
-    assertEqual: function (expected, actual) {
-      if (expected !== actual)
-        this.fail_('assertEqual');
+    assertEqual: function (actual, expected) {
+      if (expected === actual)
+        return;
+
+      this.fail_({
+        assertion: 'assertEqual',
+        expected: expected,
+        result: actual
+      });
     },
 
     assertNoException: function (func) {
       try {
         func();
       } catch (exc) {
-        this.fail_('assertNoException');
+        this.fail_({
+          assertion: 'assertNoException',
+          result: exc.toString()
+        });
       }
     },
 
     assertException: function (func, expected) {
       try {
         func();
-        this.fail_('assertException');
+
+        this.fail_({
+          assertion: 'assertException',
+          expected:  expected ? expected.toString() : 'Exception',
+          result:    null
+        });
       } catch (exc) {
-        if (expected && !(exc instanceof expected))
-          this.fail_('assertException');
+        if (expected && !(exc instanceof expected)) {
+          this.fail_({
+            assertion: 'assertException',
+            expected: expected.toString(),
+            result: exc.toString()
+          });
+        }
       }
     }
   };

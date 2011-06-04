@@ -7,39 +7,27 @@ body {
   font-size: 10pt;
 }
 
-div#header {
-  margin: 50px auto;
-  width: 600px;
-  text-align: right;
-}
-
-div#header h1 {
-  float: left;
-  margin: 0;
-  padding: 10px 0;
-  font-size: 90%;
-  font-weight: normal;
-  color: #666;
-  text-transform: uppercase;
-}
-
-div#header a {
-  color: #666;
-  text-decoration: none;
-}
-
-div#header a:hover {
+a:hover {
   color: #900020;
 }
 
-div#header p {
-  float: right;
-  margin: 0;
-  padding: 10px 0;
+h1 {
+  margin: 50px auto;
+  margin-bottom: 10px;
+  padding: 0 0 5px 7px;
+  border-bottom: solid 1px #ddd;
+  width: 600px;
+  text-align: left;
   font-size: 90%;
-  font-weight: normal;
-  color: #666;
+  font-weight: bold;
+  color: #ccc;
   text-transform: uppercase;
+  text-shadow: #fff 0px 1px 0px;
+}
+
+h1 span {
+  text-shadow: none;
+  color: #eee;
 }
 
 div#footer {
@@ -52,17 +40,16 @@ div#footer {
 
 div#web {
   clear: both;
-  background-color: #fff;
   margin: 0px auto;
   width: 600px;
   min-height: 400px;
   border-radius: 3px;
-  border: solid 1px #999;
   text-align: left;
   padding: 10px;
 }
 
 div#web p, div#web div.suite {
+  background-color: #fff;
   margin: 0 0 5px 0;
   padding: 0;
 }
@@ -70,9 +57,8 @@ div#web p, div#web div.suite {
 /* Simple output */
 div#web p.simple {
   color: #999;
-  border: solid 1px #ddd;
-  padding: 2px 5px;
-  font-size: 80%;
+  text-align: center;
+  margin-top: 10px;
   background-color: #eee;
 }
 
@@ -98,6 +84,7 @@ div#web div.suite h2 {
   padding: 0;
 }
 
+/* Test */
 div#web div.test {
   margin: 5px 0;
   border-left: solid 3px #ccc;
@@ -112,6 +99,23 @@ div#web div.suite div.succ {
 div#web div.suite div.fail {
   border: none;
   border-left: solid 3px #900020;
+}
+
+/* Failure */
+div#web div.test div.report {
+  font-size: 80%;
+  padding: 5px;
+}
+
+div#web div.test div.report p {
+  margin: 0;
+  padding: 0;
+}
+
+div#web div.test div.report p label {
+  display: inline-block;
+  font-weight: bold;
+  width: 75px;
 }
 
 textarea.fixture {

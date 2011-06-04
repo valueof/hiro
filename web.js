@@ -7,19 +7,11 @@
   var document = window.document;
   var context  = '#web';
 
-  function simple(message) {
+  hiro.bind('hiro.onComplete', function () {
     ender(document.createElement('p'))
       .addClass('simple')
-      .html(message)
+      .html('All tests finished')
       .appendTo(context);
-  }
-
-  hiro.bind('hiro.onStart', function () {
-    simple('Starting tests');
-  });
-
-  hiro.bind('hiro.onComplete', function () {
-    simple('All tests finished');
   });
 
   hiro.bind('suite.onStart', function (suite) {
@@ -57,26 +49,49 @@
   });
 
   hiro.bind('test.onStart', function (test) {
-    var uid  = 'hiro_test_' + test.suite.name + '_' + test.name;
+    var uid = 'hiro_test_' + test.suite.name + '_' + test.name;
+    var div = document.createElement('div');
 
-    ender(document.createElement('div'))
+    ender(div)
       .addClass('test')
       .addClass('idle')
       .attr('id', uid)
-      .html(test.name)
-      .appendTo(ender(context));
+      .html(test.name);
 
+    ender(document.createElement('div'))
+      .addClass('report')
+      .hide()
+      .appendTo(div);
+
+    ender(div).appendTo(context);
     context = '#' + uid;
   });
 
-  hiro.bind('test.onFailure', function (test, assertion) {
-    // pass
+  hiro.bind('test.onFailure', function (test, report) {
+    var div = ender('div.report', context);
+
+    ender(document.createElement('p'))
+      .html('<label>Assertion:</label> ' + report.assertion)
+      .appendTo(div);
+
+    if (report.expected) {
+      ender(document.createElement('p'))
+        .html('<label>Expected:</label> ' + report.expected)
+        .appendTo(div);
+    }
+
+    ender(document.createElement('p'))
+      .html('<label>Result:</label> ' + report.result)
+      .appendTo(div);
   });
 
   hiro.bind('test.onComplete', function (test, success) {
     ender(context)
       .removeClass('idle')
       .addClass(success ? 'succ' : 'fail');
+
+    if (!success)
+      ender('div.report', context).show();
 
     context = '#hiro_suite_' + test.suite.name;
   });

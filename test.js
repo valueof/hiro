@@ -27,10 +27,11 @@ hiro.module('GenericTests', {
     }
 
     function Error() {}
+    Error.prototype.toString = function () { return 'HerpDerp'; };
     function exc() { throw new Error(); }
     function noexc() { return; }
 
-    this.expect(11);
+    //this.expect(11);
     this.assertTrue(true);
     this.assertFalse(false);
     this.assertEqual('test', 'test');
@@ -38,8 +39,9 @@ hiro.module('GenericTests', {
     this.assertNoException(noexc);
 
     // assertTrue
-    hiro_.once('test.onFailure', function (test, assertion) {
-      that.assertEqual(assertion, 'assertTrue');
+    hiro_.once('test.onFailure', function (test, report) {
+      that.assertEqual(report.assertion, 'assertTrue');
+      that.assertEqual(report.result, false);
     });
 
     test(function () {
@@ -47,8 +49,9 @@ hiro.module('GenericTests', {
     });
 
     // assertFalse
-    hiro_.once('test.onFailure', function (test, assertion) {
-      that.assertEqual(assertion, 'assertFalse');
+    hiro_.once('test.onFailure', function (test, report) {
+      that.assertEqual(report.assertion, 'assertFalse');
+      that.assertEqual(report.result, true);
     });
 
     test(function () {
@@ -56,8 +59,10 @@ hiro.module('GenericTests', {
     });
 
     // assertEqual
-    hiro_.once('test.onFailure', function (test, assertion) {
-      that.assertEqual(assertion, 'assertEqual');
+    hiro_.once('test.onFailure', function (test, report) {
+      that.assertEqual(report.assertion, 'assertEqual');
+      that.assertEqual(report.expected, 'bar');
+      that.assertEqual(report.result, 'foo');
     });
 
     test(function () {
@@ -65,8 +70,10 @@ hiro.module('GenericTests', {
     });
 
     // assertException without an exception
-    hiro_.once('test.onFailure', function (test, assertion) {
-      that.assertEqual(assertion, 'assertException');
+    hiro_.once('test.onFailure', function (test, report) {
+      that.assertEqual(report.assertion, 'assertException');
+      that.assertEqual(report.expected, 'Exception');
+      that.assertEqual(report.result, null);
     });
 
     test(function () {
@@ -74,18 +81,22 @@ hiro.module('GenericTests', {
     });
 
     // assertException with unexpected exception
-    hiro_.once('test.onFailure', function (test, assertion) {
-      that.assertEqual(assertion, 'assertException');
+    hiro_.once('test.onFailure', function (test, report) {
+      that.assertEqual(report.assertion, 'assertException');
+      that.assertEqual(report.expected, 'WrongError');
+      that.assertEqual(report.result, 'HerpDerp');
     });
 
     test(function () {
       function WrongError() {}
+      WrongError.toString = function () { return 'WrongError'; };
       this.assertException(exc, WrongError);
     });
 
     // assertNoException with an exception
-    hiro_.once('test.onFailure', function (test, assertion) {
-      that.assertEqual(assertion, 'assertNoException');
+    hiro_.once('test.onFailure', function (test, report) {
+      that.assertEqual(report.assertion, 'assertNoException');
+      that.assertEqual(report.result, 'HerpDerp');
     });
 
     test(function () {
@@ -126,7 +137,7 @@ hiro.module('GenericTests', {
   /*
    * Test getFixture method
    */
-  testAssertstestGetFixture: function () {
+  testGetFixture: function () {
     this.expect(1);
     this.assertEqual(this.getFixture('test'), 'Test.');
   }
