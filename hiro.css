@@ -9,7 +9,6 @@ body {
 
 div#header {
   margin: 50px auto;
-  margin-bottom: 10px;
   width: 600px;
   text-align: right;
 }
@@ -44,81 +43,75 @@ div#header p {
 }
 
 div#footer {
-  margin-top: 50px;
+  margin: 50px 0;
   font-size: 90%;
   font-weight: normal;
   color: #ccc;
   text-shadow: #fff 0px 1px 0px;
 }
 
-div#report {
+div#web {
   clear: both;
   background-color: #fff;
   margin: 0px auto;
   width: 600px;
-  height: 400px;
+  min-height: 400px;
   border-radius: 3px;
+  border: solid 1px #999;
   text-align: left;
   padding: 10px;
-  overflow: auto;
 }
 
-div#console p {
-  color: #444;
-  margin: 0 0 10px 0;
+div#web p, div#web div.suite {
+  margin: 0 0 5px 0;
   padding: 0;
 }
 
-div#console p.succ {
-  color: green;
+/* Simple output */
+div#web p.simple {
+  color: #999;
+  border: solid 1px #ddd;
+  padding: 2px 5px;
+  font-size: 80%;
+  background-color: #eee;
 }
 
-div#console p.fail {
-  color: #900020;
+/* Suite */
+div#web div.suite {
+  color: #444;
+  border: solid 1px #ddd;
+  padding: 5px 5px 5px 15px;
 }
 
-div#console p.title {
-  font-weight: bold;
-  border-top: solid 1px #ccc;
-  padding-top: 10px;
-}
-
-div#console p.indented {
-  margin-left: 20px;
-}
-
-div.idle {
-  border: solid 1px #999;
-}
-
-div.failed {
-  border: solid 1px #900020;
-}
-
-div.passed {
+div#web div.succ {
   border: solid 1px green;
 }
 
-div#report h2 {
-  margin: 15px 0 0 0;
-  padding: 0;
+div#web div.fail {
+  border: solid 1px #900020;
+}
+
+div#web div.suite h2 {
   font-weight: normal;
   font-size: 100%;
-  text-transform: uppercase;
-  color: #666;
+  margin: 0 0 10px -10px;
+  padding: 0;
 }
 
-div#report ol {
-  margin: 10px 0 0 0;
-  padding: 0 0 0 35px;
+div#web div.test {
+  margin: 5px 0;
+  border-left: solid 3px #ccc;
+  padding-left: 5px;
 }
 
-div#report ol li {
-  margin-bottom: 10px;
+div#web div.suite div.succ {
+  border: none;
+  border-left: solid 3px green;
 }
 
-div#report ol li span {
-  font-weight: bold;
+div#web div.suite div.fail {
+  border: none;
+  border-left: solid 3px #900020;
 }
 
 textarea.fixture {

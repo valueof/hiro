@@ -8,10 +8,22 @@ var hiro = (function (window, undefined) {
   var clearTimeout = window.clearTimeout;
   var TIMEOUT      = 5000; // Default timeout for test cases and suites
   var suites       = {};
+  var events       = {
+    'hiro.onStart':     [], // no arguments
+    'hiro.onComplete':  [], // (success, report)
+
+    'suite.onStart':    [], // (suite)
+    'suite.onComplete': [], // (suite, success, report)
+    'suite.onTimeout':  [], // (suite)
+
+    'test.onStart':     [], // (test)
+    'test.onFailure':   [], // (test, assertion, place)
+    'test.onComplete':  [], // (test, success, report)
+    'test.onTimeout':   []  // (test)
+  };
 
   var Suite;
   var Test;
-  var Logger;
 
   function each(obj, callback) {
     for (var key in obj) {
@@ -51,11 +63,6 @@ var hiro = (function (window, undefined) {
     this.frame    = null;
     this.window   = null;
     this.document = null;
-
-    // Suite and Test events
-    this.events   = {
-      'test.onRun': function () {}
-    };
 
     var that = this;
 
@@ -128,33 +135,30 @@ var hiro = (function (window, undefined) {
       return (timestamp() - this.snapshot) > TIMEOUT;
     },
 
-    tearDown_: function () {
-      if (this.status != 'finished')
-        return;
+    complete_: function () {
+      if (this.status == 'finished') {
+        if (this.frame) {
+          this.window = null;
+          this.document = null;
+          document.body.removeChild(this.frame);
+        }
 
-      if (this.frame) {
-        this.window = null;
-        this.document = null;
-        document.body.removeChild(this.frame);
+        this.status = 'done';
       }
 
-      this.status = 'done';
-    },
-
-    report_: function () {
       if (this.timedout_()) {
-        hiro.logger.error('Suite', this.name, 'timed out');
+        hiro.trigger('suite.onTimeout', [ this ]);
         return false;
       }
 
       for (var name in this.report) {
         if (!this.report[name]) {
-          hiro.logger.error('Suite', this.name, 'failed');
+          hiro.trigger('suite.onComplete', [ this, false ]);
           return false;
         }
       }
 
-      hiro.logger.success('Suite', this.name, 'succeeded');
+      hiro.trigger('suite.onComplete', [ this, true ]);
       return true;
     },
 
@@ -166,14 +170,6 @@ var hiro = (function (window, undefined) {
         if (el.className == 'fixture' && el.getAttribute('data-name') == name)
           this.env = el.value;
       }
-    },
-
-    bind: function (name, listener) {
-      this.events[name] = listener;
-    },
-
-    trigger: function (name, context) {
-      return this.events[name].apply(context);
     },
 
     run: function (testName) {
@@ -193,6 +189,7 @@ var hiro = (function (window, undefined) {
         queue = [ new Test(testName, self.methods[testName], self) ];
       }
 
+      hiro.trigger('suite.onStart', [ this ]);
       test = queue.shift();
       self.status = 'running';
       self.snapshot = timestamp();
@@ -214,7 +211,7 @@ var hiro = (function (window, undefined) {
 
         // Test is done executing
         if (test.status == 'done') {
-          self.report[test.name] = test.report_();
+          self.report[test.name] = test.complete_();
           test = queue.shift();
           self.snapshot = timestamp();
         }
@@ -230,6 +227,7 @@ var hiro = (function (window, undefined) {
     this.failed   = false;
     this.paused   = false;
     this.snapshot = null;
+    this.args     = [];
 
     this.window   = this.suite.window;
     this.document = this.suite.document;
@@ -243,7 +241,7 @@ var hiro = (function (window, undefined) {
 
   Test.prototype = {
     fail_: function (message) {
-      hiro.logger.error(message);
+      hiro.trigger('test.onFailure', [ this, message ]);
       this.failed = true;
     },
 
@@ -254,18 +252,14 @@ var hiro = (function (window, undefined) {
       return (timestamp() - this.snapshot) > TIMEOUT;
     },
 
-    report_: function () {
+    complete_: function () {
       if (this.timedout_()) {
-        hiro.logger.indented = true;
-        hiro.logger.error(this.name, 'timed out');
-        hiro.logger.indented = false;
+        hiro.trigger('test.onTimeout', [ this ]);
         return false;
       }
 
       if (this.failed) {
-        hiro.logger.indented = true;
-        hiro.logger.error(this.name, 'failed');
-        hiro.logger.indented = false;
+        hiro.trigger('test.onComplete', [ this, false ]);
         return false;
       }
 
@@ -274,41 +268,13 @@ var hiro = (function (window, undefined) {
       var act = this.asserts_.actual;
 
       if (chk && exp != act) {
-        hiro.logger.indented = true;
-        hiro.logger.error(exp, 'were expected but', act, 'were executed');
-        hiro.logger.indented = false;
+        // TODO: Add number of tests ran
+        hiro.trigger('test.onComplete', [ this, false ]);
         return false;
       }
 
-      hiro.logger.indented = true;
-      hiro.logger.success(this.name, 'succeeded');
-      hiro.logger.indented = false;
+      hiro.trigger('test.onComplete', [ this, true ]);
       return true;
-    },
-
-    /*
-     * WARNING:
-     *   You should _never_ use this method in your own tests.
-     *                          — Love, Fu-Tzu
-     */
-    kungFuReversed_: function (sandbox) {
-      var error   = hiro.logger.error;
-      hiro.logger.error = function () {};
-
-      try {
-        if (!this.failed) {
-          sandbox.call(this);
-
-          if (!this.failed)
-            hiro.logger.write_(['Reversed test', this.name, 'failed'], 'fail');
-
-          this.failed = !this.failed;
-        }
-      } catch (exc) {
-        // pass
-      } finally {
-        hiro.logger.error = error;
-      }
     },
 
     getFixture: function (name) {
@@ -327,14 +293,10 @@ var hiro = (function (window, undefined) {
     },
 
     run: function () {
-      hiro.logger.indented = true;
-      hiro.logger.info('Running', this.name);
-      hiro.logger.indented = false;
-
-      var args = this.suite.trigger('test.onRun', this);
+      hiro.trigger('test.onStart', [ this ]);
 
       this.status = 'running';
-      this.func.apply(this, args || []);
+      this.func.apply(this, this.args);
       this.snapshot = timestamp();
 
       if (!this.paused)
@@ -400,46 +362,6 @@ var hiro = (function (window, undefined) {
     };
   });
 
-
-  Logger = function (el) {
-    this.container = el;
-    this.indented  = false;
-  };
-
-  Logger.prototype = {
-    write_: function (args, className) {
-      var msg  = Array.prototype.join.call(args, ' ');
-      var line = document.createElement('p');
-      var cons = document.getElementById('console');
-
-      line.innerHTML = msg;
-
-      if (className)
-        line.className = className;
-
-      if (this.indented)
-        line.className += ' indented';
-
-      cons.appendChild(line);
-    },
-
-    title: function () {
-      this.write_(arguments, 'title');
-    },
-
-    info: function () {
-      this.write_(arguments);
-    },
-
-    error: function () {
-      this.write_(arguments, 'fail');
-    },
-
-    success: function () {
-      this.write_(arguments, 'succ');
-    }
-  };
-
   return {
     // We're exposing private objects for unit tests.
     // NOBODY should use them outside of unit tests.
@@ -448,8 +370,6 @@ var hiro = (function (window, undefined) {
       Test:     Test,
       getSuite: getSuite
     },
-
-    logger: new Logger(),
 
     changeTimeout: function (timeout) {
       TIMEOUT = timeout;
@@ -465,6 +385,22 @@ var hiro = (function (window, undefined) {
 
     module: function (name, methods) {
       suites[name] = new Suite(name, methods);
+    },
+
+    bind: function (name, handler) {
+      if (events[name] === undefined)
+        return false;
+
+      events[name].push(handler);
+      return true;
+    },
+
+    trigger: function (name, args) {
+      if (events[name] === undefined)
+        return;
+
+      for (var i = 0, handler; handler = events[name][i]; i++)
+        handler.apply({}, args);
     },
 
     run: function (suiteName, testName) {
@@ -484,18 +420,18 @@ var hiro = (function (window, undefined) {
       }
 
       suite = queue.shift();
+      hiro.trigger('hiro.onStart');
 
       var interval = setInterval(function () {
-        if (suite == null)
+        if (suite == null) {
+          hiro.trigger('hiro.onComplete');
           return clearInterval(interval);
+        }
 
         // Suite hasn't been started yet. We need to reset necessary properties
         // and call user-defined setUp and waitFor methods (if any)
-        if (suite.status === null) {
-          hiro.logger.title(suite.name);
+        if (suite.status === null)
           suite.setUp_();
-        }
-
 
         // If user specified waitFor it may put the suite into the waiting
         // status, meaning that we have to wait until user-provided condition
@@ -518,10 +454,8 @@ var hiro = (function (window, undefined) {
 
         // Suite is done executing (including async tests), we can do cleanup
         // and report the results.
-        if (suite.status == 'finished') {
-          suite.tearDown_();
-          suite.report_();
-        }
+        if (suite.status == 'finished')
+          suite.complete_();
 
         // If suite is not done yet, don't proceed with the loop
         if (suite.status == 'done')
