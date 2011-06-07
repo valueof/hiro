@@ -83,6 +83,10 @@
     ender(document.createElement('p'))
       .html('<label>Result:</label> ' + report.result)
       .appendTo(div);
+
+    ender(document.createElement('p'))
+      .html('<label>Position:</label> ' + report.position)
+      .appendTo(div);
   });
 
   hiro.bind('test.onComplete', function (test, success) {

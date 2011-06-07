@@ -255,6 +255,7 @@ var hiro = (function (window, undefined) {
 
   Test.prototype = {
     fail_: function (report) {
+      report.position = this.asserts_.actual;
       hiro.trigger('test.onFailure', [ this, report ]);
       this.failed = true;
     },

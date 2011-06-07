@@ -31,7 +31,7 @@ hiro.module('GenericTests', {
     function exc() { throw new Error(); }
     function noexc() { return; }
 
-    //this.expect(11);
+    this.expect(20);
     this.assertTrue(true);
     this.assertFalse(false);
     this.assertEqual('test', 'test');

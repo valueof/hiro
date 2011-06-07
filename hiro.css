@@ -50,6 +50,7 @@ div#web {
 
 div#web p, div#web div.suite {
   background-color: #fff;
+  border-radius: 2px;
   margin: 0 0 5px 0;
   padding: 0;
 }
