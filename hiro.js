@@ -486,7 +486,7 @@ var hiro = (function (window, undefined) {
         return;
 
       for (var i = 0, handler; handler = events[name][i]; i++)
-        handler.apply({}, args);
+        handler.apply({}, args || []);
     },
 
     run: function (suiteName, testName) {
