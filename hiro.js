@@ -35,6 +35,7 @@ var hiro = (function (window, undefined) {
     'hiro.onStart':     [], // no arguments
     'hiro.onComplete':  [], // (success, report)
 
+    'suite.onSetup':    [], // (suite)
     'suite.onStart':    [], // (suite)
     'suite.onComplete': [], // (suite, success, report)
     'suite.onTimeout':  [], // (suite)
@@ -105,6 +106,8 @@ var hiro = (function (window, undefined) {
   Suite.prototype = {
     setUp_: function () {
       var self = this;
+
+      hiro.trigger('suite.onSetup', [ this ]);
 
       // If user provided a setUp method, call it (this is their chance
       // to load any fixtures)
