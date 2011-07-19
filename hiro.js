@@ -31,6 +31,7 @@ var hiro = (function (window, undefined) {
   var clearTimeout = window.clearTimeout;
   var TIMEOUT      = 15000; // Default timeout for test cases and suites
   var suites       = {};
+  var groups       = {};
   var events       = {
     'hiro.onStart':     [], // no arguments
     'hiro.onComplete':  [], // (success, report)
@@ -439,6 +440,14 @@ var hiro = (function (window, undefined) {
       TIMEOUT = timeout;
     },
 
+    getGroups: function () {
+      var names = [];
+      each(groups, function (_, name) {
+        names.push(name);
+      });
+      return names;
+    },
+
     autorun: function () {
       var query = window.location.search.slice(1).split('.');
       var suite = query.length ? query[0] : undefined;
@@ -448,7 +457,17 @@ var hiro = (function (window, undefined) {
     },
 
     module: function (name, methods) {
-      suites[name] = new Suite(name, methods);
+      var suite = new Suite(name, methods);
+
+      if (methods.groups && methods.groups.length) {
+        each(methods.groups, function (group) {
+          if (!groups[group] || !groups[group].length)
+            groups[group] = [];
+          groups[group].push(suite);
+        });
+      }
+
+      suites[name] = suite;
     },
 
     bind: function (name, handler) {

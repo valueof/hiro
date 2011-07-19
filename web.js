@@ -24,6 +24,8 @@
 /*jshint undef:true, browser:true, strict:true, maxlen:80 */
 /*global hiro:false, ender:false */
 
+var web;
+
 (function (window, undefined) {
   "use strict";
 
@@ -130,4 +132,25 @@
 
     context = '#hiro_suite_' + test.suite.name;
   });
+
+  web = {
+    init: function () {
+      var list   = ender('div#groups > ul');
+      var groups = hiro.getGroups();
+
+      function button(title) {
+        var li = ender(document.createElement('li'));
+        var bt = ender(document.createElement('button'));
+
+        bt.html(title).appendTo(li);
+        li.appendTo(list);
+      }
+
+      for (var i = 0, group; group = groups[i]; i++) {
+        button(group);
+      }
+
+      button("All Suites");
+    }
+  };
 }(window));

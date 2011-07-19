@@ -1,9 +1,8 @@
 body {
-  background-color: #eee;
+  background-color: #fff;
   font-family: Verdana, Arial, Serif;
   margin: 0;
   padding: 0;
-  text-align: center;
   font-size: 10pt;
 }
 
@@ -11,7 +10,7 @@ a:hover {
   color: #900020;
 }
 
-h1 {
+/* h1 {
   margin: 50px auto;
   margin-bottom: 10px;
   padding: 0 0 5px 7px;
@@ -23,19 +22,113 @@ h1 {
   color: #ccc;
   text-transform: uppercase;
   text-shadow: #fff 0px 1px 0px;
-}
+} */
 
-h1 span {
+/* h1 span {
   text-shadow: none;
   color: #eee;
+}*/
+
+div#groups {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-right: solid 1px #C8C9CF;
+  width: 200px;
+  margin: 0;
+  text-align: right;
+  background-color: #ECEEF4;
+}
+
+div#groups h1 {
+  margin: 20px;
+  font-weight: normal;
+  font-size: 200%;
+  padding: 0;
+  font-family: Helvetica, Verdana, Arial, Serif;
+  color: #53637D;
+}
+
+div#groups ul {
+  margin: 25px 20px 20px 20px;
+  list-style-type: none;
+}
+
+div#groups ul li {
+  margin: 10px 0;
+}
+
+div#groups ul li button {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 110%;
+  color: #426DC9;
+  cursor: pointer;
+}
+
+div#suites {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 200px;
+  right: 200px;
+  overflow: auto;
+  box-shadow: 0px 0px 10px #888;
+}
+
+div#suites h1 {
+  margin: 20px;
+  font-weight: normal;
+  font-size: 200%;
+  padding: 0 0 5px 0;
+  font-family: Helvetica, Verdana, Arial, Serif;
+  color: #53637D;
+  border-bottom: solid 1px #eee;
+}
+
+div#log {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 200px;
+  border-left: solid 1px #C8C9CF;
+  background-color: #ECEEF4;
+  overflow: auto;
+}
+
+div#log h1 {
+  margin: 20px;
+  font-weight: normal;
+  font-size: 200%;
+  padding: 0 0 5px 0;
+  font-family: Helvetica, Verdana, Arial, Serif;
+  color: #53637D;
 }
 
 div#footer {
-  margin: 50px 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200px;
+  height: 50px;
+  border-right: solid 1px #C8C9CF;
+  margin: 0;
+  text-align: right;
+}
+
+div#footer p {
+  margin: 20px;
+  padding: 0;
   font-size: 90%;
-  font-weight: normal;
-  color: #ccc;
-  text-shadow: #fff 0px 1px 0px;
+  color: #999;
+}
+
+div#footer a {
+  color: #999;
 }
 
 div#web {

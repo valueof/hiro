@@ -2,6 +2,8 @@
 /*global hiro:false */
 
 hiro.module('GenericTests', {
+  groups: [ 'Tests' ],
+
   setUp: function () {
     this.loadFixture('hirojs');
   },
