@@ -29,7 +29,7 @@ var hiro = (function (window, undefined) {
   var document     = window.document;
   var setTimeout   = window.setTimeout;
   var clearTimeout = window.clearTimeout;
-  var TIMEOUT      = 5000; // Default timeout for test cases and suites
+  var TIMEOUT      = 15000; // Default timeout for test cases and suites
   var suites       = {};
   var events       = {
     'hiro.onStart':     [], // no arguments
