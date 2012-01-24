@@ -21,7 +21,6 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/*jshint undef:true, browser:true, strict:true, maxlen:100, white:true */
 /*global hiro:false, ender:false */
 
 (function (window, undefined) {

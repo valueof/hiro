@@ -1,5 +1,4 @@
-/*jshint undef:true, browser:true, maxlen:100, eqnull:true, latedef:true,
-	smarttabs:true, white:true */
+/*jshint smarttabs:true, strict:false */
 /*global hiro:false */
 
 hiro.module('GenericTests', {

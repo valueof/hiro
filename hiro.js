@@ -21,8 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/*jshint undef:true, browser:true, maxlen:100, loopfunc:true, strict:true,
-	eqnull:true, white:true */
+/*jshint loopfunc:true */
 
 var hiro = (function (window, undefined) {
 	"use strict";
