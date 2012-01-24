@@ -142,6 +142,15 @@ var hiro = (function (window, undefined) {
 				hiro.bind('test.onStart', self.onTest_);
 			}
 
+			if (self.methods.onCleanup) {
+				self.onCleanup_ = function (test) {
+					if (test.suite.name == self.name)
+						self.methods.onCleanup.apply(test);
+				};
+
+				hiro.bind('test.onComplete', self.onCleanup_);
+			};
+
 			if (self.methods.waitFor) {
 				self.status = 'waiting';
 				self.snapshot = timestamp();
@@ -181,6 +190,10 @@ var hiro = (function (window, undefined) {
 
 				if (this.methods.onTest) {
 					hiro.unbind('test.onStart', this.onTest_);
+				}
+
+				if (this.methods.onCleanup) {
+					hiro.unbind('test.onCleanup', this.onCleanup_);
 				}
 
 				this.status = 'done';

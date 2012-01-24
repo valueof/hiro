@@ -346,10 +346,15 @@ hiro.module('TestRunnerTests', {
 			this.testValue = true;
 			this.args = [1, 2];
 		};
+
+		suite.methods.onCleanup = function () {
+			that.assertTrue(true);
+		};
+
 		suite.setUp_();
 
 		hiro_.changeTimeout(500);
-		this.expect(14);
+		this.expect(15);
 
 		hiro_.once('test.onComplete', function (test, success) {
 			that.assertEqual(test.name, 'testDummy');
