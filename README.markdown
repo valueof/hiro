@@ -7,6 +7,6 @@ Hiro is a small yet powerful unit testing framework for JavaScript. It runs each
 
 Hiro testing itself:
 
-![Hiro screenshot](http://dl.dropbox.com/u/447925/Screenshots/ozsrw2o4qsz~.png)
+![Hiro screenshot](http://hirojs.com/hiro-screenshot.png)
 
 
