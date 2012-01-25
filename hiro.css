@@ -85,6 +85,15 @@ div#web div.suite h2 {
   padding: 0;
 }
 
+div#web div.suite a {
+  color: #444;
+  text-decoration: none;
+}
+
+div#web div.suite a:hover {
+  text-decoration: underline;
+}
+
 /* Test */
 div#web div.test {
   margin: 5px 0;

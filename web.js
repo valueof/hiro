@@ -46,7 +46,7 @@
 			.attr('id', uid);
 
 		ender(document.createElement('h2'))
-			.html(suite.name)
+			.html("<a href='?" + suite.name + "'>" + suite.name + "</a>")
 			.appendTo(div);
 
 		ender(context).append(div);
@@ -78,7 +78,7 @@
 			.addClass('test')
 			.addClass('idle')
 			.attr('id', uid)
-			.html(test.name);
+			.html("<a href='?" + test.suite.name + "." + test.name + "'>" + test.name + "</a>");
 
 		ender(document.createElement('div'))
 			.addClass('report')
