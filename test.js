@@ -157,6 +157,12 @@ hiro.module('TestRunnerTests', {
 		this.args = [ hiro_, hiro_.internals_.Test, hiro_.internals_.Suite ];
 	},
 
+	onCleanup: function () {
+		var hiro_ = this.window.hiro;
+		hiro_.unbind('test.onStart');
+		hiro_.unbind('test.onCleanup');
+	},
+
 	testRun: function (hiro_, Test, Suite) {
 		var that = this;
 
@@ -352,7 +358,6 @@ hiro.module('TestRunnerTests', {
 		};
 
 		suite.setUp_();
-
 		hiro_.changeTimeout(500);
 		this.expect(15);
 
@@ -372,6 +377,75 @@ hiro.module('TestRunnerTests', {
 		this.assertFalse(test.failed);
 		this.assertFalse(test.paused);
 		this.assertTrue(test.complete_());
+	},
+
+	testExceptionInsideOnTest: function (hiro_, Test, Suite) {
+		var that = this;
+		var suite = new Suite('test', {});
+		var test;
+
+		function testCase() {
+			// Test case shouldn't be called if there's an error in the onTest method
+			that.assertTrue(false);
+		}
+
+		test = new Test('testDummy', testCase, suite);
+
+		suite.methods.onTest = function () {
+			throw new Error("Wub wub wub");
+		};
+
+		suite.setUp_();
+		hiro_.changeTimeout(500);
+		this.expect(9);
+
+		this.assertEqual(test.name, 'testDummy');
+		this.assertEqual(test.status, 'ready');
+		this.assertFalse(test.failed);
+		this.assertFalse(test.paused);
+		this.assertTrue(test.snapshot == null);
+
+		test.run();
+		this.assertEqual(test.status, 'done');
+		this.assertTrue(test.failed);
+		this.assertFalse(test.paused);
+		this.assertFalse(test.complete_());
+	},
+
+	testExceptionInsideOnCleanup: function (hiro_, Test, Suite) {
+		var that = this;
+		var suite = new Suite('test', {});
+		var test;
+
+		function testCase() {
+			that.assertTrue(true);
+		}
+
+		test = new Test('testDummy', testCase, suite);
+
+		suite.methods.onCleanup = function () {
+			throw new Error("Wub wub wub");
+		};
+
+		suite.setUp_();
+		hiro_.changeTimeout(500);
+		this.expect(11);
+
+		this.assertEqual(test.name, 'testDummy');
+		this.assertEqual(test.status, 'ready');
+		this.assertFalse(test.failed);
+		this.assertFalse(test.paused);
+		this.assertTrue(test.snapshot == null);
+
+		test.run();
+		this.assertEqual(test.status, 'done');
+		this.assertFalse(test.failed);
+		this.assertFalse(test.paused);
+		this.assertFalse(test.complete_());
+
+		// Test.complete_ changes test status to 'failed'
+		// if there's an exception inside of onCleanup
+		this.assertTrue(test.failed);
 	}
 });
 

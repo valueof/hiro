@@ -135,21 +135,18 @@ var hiro = (function (window, undefined) {
 
 			if (self.methods.onTest) {
 				self.onTest_ = function (test) {
-					if (test.suite.name == self.name)
+					if (test.suite.name != self.name)
+						return;
+
+					try {
 						self.methods.onTest.apply(test);
+					} catch (exc) {
+						test.fail_({ assertion: 'onTest', result: exc.toString() });
+					}
 				};
 
 				hiro.bind('test.onStart', self.onTest_);
 			}
-
-			if (self.methods.onCleanup) {
-				self.onCleanup_ = function (test) {
-					if (test.suite.name == self.name)
-						self.methods.onCleanup.apply(test);
-				};
-
-				hiro.bind('test.onComplete', self.onCleanup_);
-			};
 
 			if (self.methods.waitFor) {
 				self.status = 'waiting';
@@ -190,10 +187,6 @@ var hiro = (function (window, undefined) {
 
 				if (this.methods.onTest) {
 					hiro.unbind('test.onStart', this.onTest_);
-				}
-
-				if (this.methods.onCleanup) {
-					hiro.unbind('test.onCleanup', this.onCleanup_);
 				}
 
 				this.status = 'done';
@@ -312,6 +305,14 @@ var hiro = (function (window, undefined) {
 				return false;
 			}
 
+			if (this.suite.methods.onCleanup) {
+				try {
+					this.suite.methods.onCleanup.apply(this);
+				} catch (exc) {
+					this.fail_({ assertion: 'onComplete', result: exc.toString() });
+				}
+			}
+
 			if (this.failed) {
 				hiro.trigger('test.onComplete', [ this, false ]);
 				return false;
@@ -349,9 +350,11 @@ var hiro = (function (window, undefined) {
 		run: function () {
 			hiro.trigger('test.onStart', [ this ]);
 
-			this.status = 'running';
-			this.func.apply(this, this.args);
-			this.snapshot = timestamp();
+			if (!this.failed) {
+				this.status = 'running';
+				this.func.apply(this, this.args);
+				this.snapshot = timestamp();
+			}
 
 			if (!this.paused)
 				this.status = 'done';
@@ -445,7 +448,8 @@ var hiro = (function (window, undefined) {
 		internals_: {
 			Suite:    Suite,
 			Test:     Test,
-			getSuite: getSuite
+			getSuite: getSuite,
+			events:   events
 		},
 
 		changeTimeout: function (timeout) {
@@ -487,8 +491,13 @@ var hiro = (function (window, undefined) {
 			if (events[name] === undefined)
 				return;
 
+			if (!handler) {
+				events[name] = [];
+				return;
+			}
+
 			for (var i = 0, h; h = events[name][i]; i++) {
-				if (h == handler) {
+				if (h === handler) {
 					events[name].splice(i, 1);
 					return;
 				}
