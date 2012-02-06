@@ -380,14 +380,14 @@ var hiro = (function (window, undefined) {
 			if (value)
 				return;
 
-			this.fail_({ assertion: 'assertTrue', result: value });
+			this.fail_({ assertion: 'assertTrue', expected : true, result: value });
 		},
 
 		assertFalse: function (value) {
 			if (!value)
 				return;
 
-			this.fail_({ assertion: 'assertFalse', result: value });
+			this.fail_({ assertion: 'assertFalse', expected : false, result: value });
 		},
 
 		assertEqual: function (actual, expected) {

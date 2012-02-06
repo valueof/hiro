@@ -31,7 +31,7 @@ hiro.module('GenericTests', {
 		function exc() { throw new Error(); }
 		function noexc() { return; }
 
-		this.expect(20);
+		this.expect(22);
 		this.assertTrue(true);
 		this.assertFalse(false);
 		this.assertEqual('test', 'test');
@@ -41,6 +41,7 @@ hiro.module('GenericTests', {
 		// assertTrue
 		hiro_.once('test.onFailure', function (test, report) {
 			that.assertEqual(report.assertion, 'assertTrue');
+                        that.assertTrue(report.expected, true);
 			that.assertEqual(report.result, false);
 		});
 
@@ -51,6 +52,7 @@ hiro.module('GenericTests', {
 		// assertFalse
 		hiro_.once('test.onFailure', function (test, report) {
 			that.assertEqual(report.assertion, 'assertFalse');
+                        that.assertFalse(report.expected);
 			that.assertEqual(report.result, true);
 		});
 
