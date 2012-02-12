@@ -69,6 +69,27 @@ var hiro = (function (window, undefined) {
     return Date.UTC.apply(null, args);
   }
 
+
+  // so far supports only Firefox, Chrome and Opera (buggy)
+  // borrowed from QUnit: https://github.com/jquery/qunit/blob/master/qunit/qunit.js
+  function sourceFromStacktrace() {
+    try {
+      throw new Error();
+    } catch ( e ) {
+      if (e.stacktrace) {
+        // Opera
+        return e.stacktrace.split("\n")[7];
+      } else if (e.stack) {
+        // Firefox, Chrome
+        return e.stack.split("\n")[5];
+      } else if (e.sourceURL) {
+        // Safari, PhantomJS
+        // TODO sourceURL points at the 'throw new Error' line above, useless
+        //return e.sourceURL + ":" + e.line;
+      }
+    }
+  }
+
   function getSuite(name) {
     return suites[name];
   }
@@ -282,6 +303,8 @@ var hiro = (function (window, undefined) {
   Test.prototype = {
     fail_: function (report) {
       report.position = this.asserts_.actual;
+      report.source = sourceFromStacktrace();
+
       hiro.trigger('test.onFailure', [ this, report ]);
       this.failed = true;
     },
