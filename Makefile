@@ -10,3 +10,7 @@ lint:
 	@echo "test.js"
 	@jshint test.js --config jshint.json && echo "* OK"
 	@echo
+
+
+serve:
+	@python -m SimpleHTTPServer 7777
