@@ -73,13 +73,51 @@ var hiro = (function (window, undefined) {
 		return suites[name];
 	}
 
+
+	// People can load fixtures either by injecting HTML into
+	// an iframe or by loading another page inside of it. Note,
+	// that the page has to be on the same domain or we won't
+	// be able to grab objects from inside the iframe.
+
+	function getFixture(opts) {
+		// Backwards compatibility
+		if (typeof opts == 'string')
+			opts = { data: opts };
+
+		if (opts.url)
+			return { type: 'url', data: opts.url };
+
+		var els = document.getElementsByTagName('script');
+		var len = els.length;
+		var el;
+
+		for (var i = 0; i < len; i++) {
+			el = els[i];
+			if (el.getAttribute('type') == 'hiro/fixture' &&
+					el.getAttribute('data-name') == opts.data)
+				return { type: 'text', data: el.innerHTML };
+		}
+
+		// We used to use textarea.fixture[data-name=<name>] before,
+		// checking these elements for backwards compatibility.
+		els = document.getElementsByTagName('textarea');
+		len = els.length;
+
+		for (i = 0; i < len; i++) {
+			el = els[i];
+			if (el.className == 'fixture' &&
+					el.getAttribute('data-name') == opts.data)
+				return { type: 'text', data: el.value };
+		}
+	}
+
 	Suite = function (name, methods) {
 		/*jshint boss: true */
 
 		this.name     = name;
 		this.report   = {};
 		this.methods  = {};
-		this.env      = '';
+		this.env      = null;
 		this.status   = null;
 		this.snapshot = null;
 
@@ -114,23 +152,33 @@ var hiro = (function (window, undefined) {
 			if (self.methods.setUp)
 				self.methods.setUp.apply(self);
 
+			function append() {
+				document.body.appendChild(self.frame);
+
+				// Save references to the sandboxed environment
+				self.window   = self.frame.contentWindow;
+				self.document = self.window.document;
+			}
+
 			// If user loaded a fixture, create a sandboxed environment with an
 			// iframe and document.write that fixture into it.
-			if (self.env !== '') {
+			if (self.env && self.env.type) {
 				self.frame = document.createElement('iframe');
 				self.frame.id = 'hiro_fixture_' + this.name;
 				self.frame.style.position = 'absolute';
 				self.frame.style.top = '-2000px';
-				document.body.appendChild(self.frame);
 
-				// Save references to the sandboxed environment
-				self.window = self.frame.contentWindow;
-				self.document = self.window.document;
+				if (self.env.type == 'url') {
+					self.frame.src = self.env.data;
+					append();
+				} else if (self.env.type == 'text') {
+					append();
 
-				// We need to document.close right away or Internet Explorer hangs
-				// when injected code tries to load external resources.
-				self.document.write(self.env);
-				self.document.close();
+					// We need to document.close right away or Internet Explorer hangs
+					// when injected code tries to load external resources.
+					self.document.write(self.env.data);
+					self.document.close();
+				}
 			}
 
 			if (self.methods.onTest) {
@@ -208,14 +256,8 @@ var hiro = (function (window, undefined) {
 			return true;
 		},
 
-		loadFixture: function (name) {
-			/*jshint boss: true */
-			var els = document.getElementsByTagName('textarea');
-
-			for (var i = 0, el; el = els[i]; i++) {
-				if (el.className == 'fixture' && el.getAttribute('data-name') == name)
-					this.env = el.value;
-			}
+		loadFixture: function (opts) {
+			this.env = getFixture(opts);
 		},
 
 		run: function (testName) {
@@ -332,14 +374,9 @@ var hiro = (function (window, undefined) {
 			return true;
 		},
 
-		getFixture: function (name) {
-			/*jshint boss: true */
-			var els = document.getElementsByTagName('textarea');
-
-			for (var i = 0, el; el = els[i]; i++) {
-				if (el.className == 'fixture' && el.getAttribute('data-name') == name)
-					return el.value;
-			}
+		getFixture: function (opts) {
+			// TODO: XHR whatever is on other side of the URL
+			return getFixture(opts).data;
 		},
 
 		expect: function (num) {
@@ -575,3 +612,5 @@ var hiro = (function (window, undefined) {
 		}
 	};
 }(this));
+
+/* vim: set ts=2 sw=2 noexpandtab: */

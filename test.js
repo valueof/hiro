@@ -138,8 +138,17 @@ hiro.module('GenericTests', {
 	 * Test getFixture method
 	 */
 	testGetFixture: function () {
-		this.expect(1);
-		this.assertEqual(this.getFixture('test'), 'Test.');
+		this.expect(4);
+
+        // Old-style fixture
+		this.assertEqual(this.getFixture('old-style'), 'Old style.');
+
+        // New-style fixture
+        this.assertEqual(this.getFixture('new-style'), 'New style.');
+
+        // New signature
+        this.assertEqual(this.getFixture({ data: 'new-style' }), 'New style.');
+        this.assertEqual(this.getFixture({ url: 'test.js' }), 'test.js');
 	}
 });
 
