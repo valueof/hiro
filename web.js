@@ -111,9 +111,9 @@
 			.appendTo(div);
 
 		if (report.source)
-				ender(document.createElement('p'))
-					.html('<label>Source:</label> ' + report.source)
-					.appendTo(div);
+			ender(document.createElement('p'))
+				.html('<label>Source:</label> ' + report.source)
+				.appendTo(div);
 	});
 
 	hiro.bind('test.onComplete', function (test, success) {

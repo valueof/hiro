@@ -48,7 +48,7 @@ var hiro = (function (window, undefined) {
 
 	var Suite;
 	var Test;
-	var Failure = function () {}
+	var Failure = function () {};
 
 	function each(obj, callback) {
 		for (var key in obj) {
@@ -430,7 +430,7 @@ var hiro = (function (window, undefined) {
 					this.func.apply(this, this.args);
 				} catch (exc) {
 					if (!(exc instanceof Failure))
-							throw exc;
+						throw exc;
 				}
 
 				this.snapshot = timestamp();
