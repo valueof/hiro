@@ -3,7 +3,10 @@
 
 // You should never see this module
 // in the final report.
-hiro.module('Empty', {});
+hiro.module('Empty', {
+	setUp: function () {},
+	waitFor: function () { return true; }
+});
 
 hiro.module('GenericTests', {
 	mixin: ['Empty'],

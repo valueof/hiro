@@ -149,14 +149,18 @@ var hiro = (function (window, undefined) {
 			for (var i = 0, suiteName; suiteName = methods.mixin[i]; i++) {
 				each(suites[suiteName].methods, function (value, key) {
 					self.methods[key] = value;
+
+					if (typeof value  == 'function' && key.slice(0, 4) == 'test')
+						self.length += 1;
 				});
-				self.length += suites[suiteName].length;
 			}
 		}
 
 		each(methods, function (value, key) {
 			self.methods[key] = value;
-			self.length += 1;
+
+			if (typeof value == 'function' && key.slice(0, 4) == 'test')
+				self.length += 1;
 		});
 	};
 
