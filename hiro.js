@@ -117,6 +117,7 @@ var hiro = (function (window, undefined) {
 		this.name     = name;
 		this.report   = {};
 		this.methods  = {};
+		this.length   = 0;
 		this.env      = null;
 		this.status   = null;
 		this.snapshot = null;
@@ -126,18 +127,20 @@ var hiro = (function (window, undefined) {
 		this.window   = null;
 		this.document = null;
 
-		var that = this;
+		var self = this;
 
 		if (methods.mixin && methods.mixin.length) {
 			for (var i = 0, suiteName; suiteName = methods.mixin[i]; i++) {
 				each(suites[suiteName].methods, function (value, key) {
-					that.methods[key] = value;
+					self.methods[key] = value;
 				});
+				self.length += suites[suiteName].length;
 			}
 		}
 
 		each(methods, function (value, key) {
-			that.methods[key] = value;
+			self.methods[key] = value;
+			self.length += 1;
 		});
 	};
 
@@ -559,9 +562,11 @@ var hiro = (function (window, undefined) {
 			var suite;
 
 			if (!suiteName) {
-				// Push all available suites to the queue
+				// Push all available suites to the queue but only if
+				// they are not empty (i.e. with at least one test).
 				for (var name in suites) {
-					queue.push(suites[name]);
+					if (suites[name].length)
+						queue.push(suites[name]);
 				}
 			} else {
 				queue = [ suites[suiteName] ];

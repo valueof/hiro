@@ -1,7 +1,13 @@
 /*jshint smarttabs:true, strict:false */
 /*global hiro:false */
 
+// You should never see this module
+// in the final report.
+hiro.module('Empty', {});
+
 hiro.module('GenericTests', {
+	mixin: ['Empty'],
+
 	setUp: function () {
 		this.loadFixture('hirojs');
 	},
@@ -15,9 +21,7 @@ hiro.module('GenericTests', {
 		this.args = [ hiro_, hiro_.internals_.Test, hiro_.internals_.Suite ];
 	},
 
-	/*
-	 * Test basic assertions
-	 */
+	// Test basic assertions
 	testAsserts: function (hiro_, Test, Suite) {
 		var that = this;
 
@@ -140,15 +144,15 @@ hiro.module('GenericTests', {
 	testGetFixture: function () {
 		this.expect(4);
 
-        // Old-style fixture
+		// Old-style fixture
 		this.assertEqual(this.getFixture('old-style'), 'Old style.');
 
-        // New-style fixture
-        this.assertEqual(this.getFixture('new-style'), 'New style.');
+		// New-style fixture
+		this.assertEqual(this.getFixture('new-style'), 'New style.');
 
-        // New signature
-        this.assertEqual(this.getFixture({ data: 'new-style' }), 'New style.');
-        this.assertEqual(this.getFixture({ url: 'test.js' }), 'test.js');
+		// New signature
+		this.assertEqual(this.getFixture({ data: 'new-style' }), 'New style.');
+		this.assertEqual(this.getFixture({ url: 'test.js' }), 'test.js');
 	}
 });
 
@@ -525,3 +529,5 @@ hiro.module('SuiteTests', {
 		this.assertEqual(child.methods.mixin[0], 'parent');
 	}
 });
+
+/* vim: set ts=2 sw=2 noexpandtab: */
