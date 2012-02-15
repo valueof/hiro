@@ -48,6 +48,7 @@ var hiro = (function (window, undefined) {
 
 	var Suite;
 	var Test;
+	var Failure = function () {}
 
 	function each(obj, callback) {
 		for (var key in obj) {
@@ -88,7 +89,6 @@ var hiro = (function (window, undefined) {
 				return exc.stack.split('\n')[5];      // Firefox, Chrome
 		}
 	}
-
 
 	// People can load fixtures either by injecting HTML into
 	// an iframe or by loading another page inside of it. Note,
@@ -208,7 +208,12 @@ var hiro = (function (window, undefined) {
 					try {
 						self.methods.onTest.apply(test);
 					} catch (exc) {
-						test.fail_({ assertion: 'onTest', result: exc.toString() });
+						try {
+							test.fail_({ assertion: 'onTest', result: exc.toString() });
+						} catch (e) {
+							if (!(e instanceof Failure))
+								throw e;
+						}
 					}
 				};
 
@@ -353,6 +358,7 @@ var hiro = (function (window, undefined) {
 
 			hiro.trigger('test.onFailure', [ this, report ]);
 			this.failed = true;
+			throw new Failure();
 		},
 
 		timedout_: function () {
@@ -372,7 +378,12 @@ var hiro = (function (window, undefined) {
 				try {
 					this.suite.methods.onCleanup.apply(this);
 				} catch (exc) {
-					this.fail_({ assertion: 'onComplete', result: exc.toString() });
+					try {
+						this.fail_({ assertion: 'onComplete', result: exc.toString() });
+					} catch (e) {
+						if (!(e instanceof Failure))
+							throw e;
+					}
 				}
 			}
 
@@ -410,7 +421,14 @@ var hiro = (function (window, undefined) {
 
 			if (!this.failed) {
 				this.status = 'running';
-				this.func.apply(this, this.args);
+
+				try {
+					this.func.apply(this, this.args);
+				} catch (exc) {
+					if (!(exc instanceof Failure))
+							throw exc;
+				}
+
 				this.snapshot = timestamp();
 			}
 

@@ -253,16 +253,18 @@ hiro.module('TestRunnerTests', {
 
 	testFailedRun: function (hiro_, Test, Suite) {
 		var that = this;
+		var flag = true;
 		var test;
 
 		function testCase() {
 			this.expect(1);
 			this.assertTrue(false);
+			flag = false; // This line must not be executed.
 		}
 
 		test = new Test('testDummy', testCase, new Suite('test', {}));
 		hiro_.changeTimeout(500);
-		this.expect(11);
+		this.expect(12);
 
 		hiro_.once('test.onComplete', function (test, success) {
 			that.assertEqual(test.name, 'testDummy');
@@ -279,8 +281,11 @@ hiro.module('TestRunnerTests', {
 		this.assertTrue(test.snapshot != null);
 		this.assertFalse(test.paused);
 		this.assertTrue(test.failed);
-
 		this.assertFalse(test.complete_());
+
+		// The code after failed assertion shouldn't be executed and
+		// thus the flag should always be true.
+		this.assertTrue(flag);
 	},
 
 	testNotAllAssertions: function (hiro_, Test, Suite) {
