@@ -109,6 +109,11 @@
 		ender(document.createElement('p'))
 			.html('<label>Position:</label> ' + report.position)
 			.appendTo(div);
+
+		if (report.source)
+				ender(document.createElement('p'))
+					.html('<label>Source:</label> ' + report.source)
+					.appendTo(div);
 	});
 
 	hiro.bind('test.onComplete', function (test, success) {
@@ -130,3 +135,5 @@
 		context = '#hiro_suite_' + test.suite.name;
 	});
 }(window));
+
+/* vim: set ts=2 sw=2 noexpandtab: */

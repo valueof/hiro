@@ -74,6 +74,22 @@ var hiro = (function (window, undefined) {
 	}
 
 
+	// Attempts to retrieve affected line from stack trace.
+	// Taken from QUnit, so far supports only Firefox, Chrome
+	// and Opera (buggy).
+
+	function getAffectedLine() {
+		try {
+			throw new Error();
+		} catch (exc) {
+			if (exc.stacktrace)
+				return exc.stacktrace.split('\n')[7]; // Opera
+			else if (exc.stack)
+				return exc.stack.split('\n')[5];      // Firefox, Chrome
+		}
+	}
+
+
 	// People can load fixtures either by injecting HTML into
 	// an iframe or by loading another page inside of it. Note,
 	// that the page has to be on the same domain or we won't
@@ -333,6 +349,8 @@ var hiro = (function (window, undefined) {
 	Test.prototype = {
 		fail_: function (report) {
 			report.position = this.asserts_.actual;
+			report.source = getAffectedLine();
+
 			hiro.trigger('test.onFailure', [ this, report ]);
 			this.failed = true;
 		},
