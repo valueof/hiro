@@ -33,7 +33,7 @@ var hiro = (function (window, undefined) {
 	var suites       = {};
 	var events       = {
 		'hiro.onStart':     [], // no arguments
-		'hiro.onComplete':  [], // (success, report)
+		'hiro.onComplete':  [], // no arguments
 
 		'suite.onSetup':    [], // (suite)
 		'suite.onStart':    [], // (suite)

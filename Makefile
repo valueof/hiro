@@ -4,7 +4,15 @@ lint:
 	@echo
 
 	@echo "web.js"
-	@jshint web.js --config jshint.json && echo "* OK"
+	@jshint env/web/web.js --config jshint.json && echo "* OK"
+	@echo
+
+	@echo "phantom.js"
+	@jshint env/phantom/phantom.js --config jshint.json && echo "* OK"
+	@echo
+
+	@echo "phantom/cli.js"
+	@jshint env/phantom/cli.js --config jshint.json && echo "* OK"
 	@echo
 
 	@echo "test.js"
@@ -14,3 +22,7 @@ lint:
 
 serve:
 	@python -m SimpleHTTPServer 7777
+
+
+test:
+	@phantomjs env/phantom/cli.js
