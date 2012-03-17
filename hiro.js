@@ -470,6 +470,20 @@ var hiro = (function (window, undefined) {
 			this.fail_({ assertion: 'assertFalse', expected : false, result: value });
 		},
 
+		assertUndefined: function (value) {
+			if (undefined === value)
+				return;
+
+			this.fail_({ assertion: 'assertUndefined', expected : undefined, result: value });
+		},
+
+		assertNull: function (value) {
+			if (null === value)
+				return;
+
+			this.fail_({ assertion: 'assertNull', expected : null, result: value });
+		},
+
 		assertEqual: function (actual, expected) {
 			if (expected === actual)
 				return;
@@ -510,6 +524,31 @@ var hiro = (function (window, undefined) {
 					});
 				}
 			}
+		},
+
+		assertInstanceOf: function (object, prototype) {
+			if (object instanceof prototype)
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertInstanceOf', expected : prototype, result: object.prototype });
+		},
+
+		assertObjectHasProperty: function (object, property) {
+			if (property in object)
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertObjectHasProperty', expected : true, result: false });
+		},
+
+    // TODO: create assertIndexOf equivalent
+		assertArrayContainsValue: function (array, value) {
+			if (-1 !== array.indexOf(value))
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertArrayContainsValue', expected : true, result: false });
 		}
 	};
 

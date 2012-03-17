@@ -38,12 +38,17 @@ hiro.module('GenericTests', {
 		function exc() { throw new Error(); }
 		function noexc() { return; }
 
-		this.expect(22);
+		this.expect(33);
 		this.assertTrue(true);
 		this.assertFalse(false);
+		this.assertUndefined(undefined);
+		this.assertNull(null);
 		this.assertEqual('test', 'test');
 		this.assertException(exc, Error);
 		this.assertNoException(noexc);
+		this.assertInstanceOf(new Error(), Error);
+		this.assertObjectHasProperty({ 'test': '' }, 'test');
+		this.assertArrayContainsValue(['test'], 'test');
 
 		// assertTrue
 		hiro_.once('test.onFailure', function (test, report) {
@@ -65,6 +70,28 @@ hiro.module('GenericTests', {
 
 		test(function () {
 			this.assertFalse(true);
+		});
+
+		// assertUndefined
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertUndefined');
+			that.assertUndefined(report.expected);
+			that.assertEqual(report.result, true);
+		});
+
+		test(function () {
+			this.assertUndefined(true);
+		});
+
+		// assertNull
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertNull');
+			that.assertNull(report.expected);
+			that.assertEqual(report.result, true);
+		});
+
+		test(function () {
+			this.assertNull(true);
 		});
 
 		// assertEqual
@@ -111,6 +138,10 @@ hiro.module('GenericTests', {
 		test(function () {
 			this.assertNoException(exc);
 		});
+
+		// TODO: add test for failing assertion with assertInstanceOf
+		// TODO: add test for failing assertion with assertObjectHasProperty
+		// TODO: add test for failing assertion with assertArrayContainsValue
 	},
 
 	/*
