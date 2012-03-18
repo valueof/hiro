@@ -526,6 +526,38 @@ var hiro = (function (window, undefined) {
 			}
 		},
 
+		assertGreaterThan: function (value, reference) {
+			if (value > reference)
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertGreaterThan', expected : reference, result: value });
+		},
+
+		assertLessThan: function (value, reference) {
+			if (value < reference)
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertLessThan', expected : reference, result: value });
+		},
+		
+		assertGreaterThanOrEqualTo: function (value, reference) {
+			if (value >= reference)
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertGreaterThanOrEqualTo', expected : reference, result: value });
+		},
+
+		assertLessThanOrEqualTo: function (value, reference) {
+			if (value <= reference)
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertLessThanOrEqualTo', expected : reference, result: value });
+		},
+
 		assertInstanceOf: function (object, prototype) {
 			if (object instanceof prototype)
 				return;

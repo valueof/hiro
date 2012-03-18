@@ -38,7 +38,7 @@ hiro.module('GenericTests', {
 		function exc() { throw new Error(); }
 		function noexc() { return; }
 
-		this.expect(42);
+		this.expect(66);
 		this.assertTrue(true);
 		this.assertFalse(false);
 		this.assertUndefined(undefined);
@@ -46,6 +46,12 @@ hiro.module('GenericTests', {
 		this.assertEqual('test', 'test');
 		this.assertException(exc, Error);
 		this.assertNoException(noexc);
+		this.assertGreaterThan(4, 3);
+		this.assertLessThan(3, 4);
+		this.assertGreaterThanOrEqualTo(4, 3);
+		this.assertGreaterThanOrEqualTo(4, 4);
+		this.assertLessThanOrEqualTo(3, 4);
+		this.assertLessThanOrEqualTo(4, 4);
 		this.assertInstanceOf(new Error(), Error);
 		this.assertObjectHasProperty({ 'test': '' }, 'test');
 		this.assertArrayContainsValue(['test'], 'test');
@@ -137,6 +143,73 @@ hiro.module('GenericTests', {
 
 		test(function () {
 			this.assertNoException(exc);
+		});
+
+		// assertGreaterThan with lower value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertGreaterThan');
+			that.assertEqual(report.expected, 4);
+			that.assertEqual(report.result, 3);
+		});
+
+		test(function () {
+			this.assertGreaterThan(3, 4);
+		});
+
+		// assertGreaterThan with equal value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertGreaterThan');
+			that.assertEqual(report.expected, 4);
+			that.assertEqual(report.result, 4);
+		});
+
+		test(function () {
+			this.assertGreaterThan(4, 4);
+		});
+
+		// assertLessThan with higher value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertLessThan');
+			that.assertEqual(report.expected, 3);
+			that.assertEqual(report.result, 4);
+		});
+
+		test(function () {
+			this.assertLessThan(4, 3);
+		});
+
+		// assertLessThan with equal value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertLessThan');
+			that.assertEqual(report.expected, 4);
+			that.assertEqual(report.result, 4);
+		});
+
+		test(function () {
+			this.assertLessThan(4, 4);
+		});
+
+
+		// assertGreaterThanOrEqualTo with lower value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertGreaterThanOrEqualTo');
+			that.assertEqual(report.expected, 4);
+			that.assertEqual(report.result, 3);
+		});
+
+		test(function () {
+			this.assertGreaterThanOrEqualTo(3, 4);
+		});
+
+		// assertLessThanOrEqualTo with higher value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertLessThanOrEqualTo');
+			that.assertEqual(report.expected, 3);
+			that.assertEqual(report.result, 4);
+		});
+
+		test(function () {
+			this.assertLessThanOrEqualTo(4, 3);
 		});
 
 		// assertInstanceOf with incorrect class
