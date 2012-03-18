@@ -38,7 +38,7 @@ hiro.module('GenericTests', {
 		function exc() { throw new Error(); }
 		function noexc() { return; }
 
-		this.expect(33);
+		this.expect(42);
 		this.assertTrue(true);
 		this.assertFalse(false);
 		this.assertUndefined(undefined);
@@ -139,9 +139,38 @@ hiro.module('GenericTests', {
 			this.assertNoException(exc);
 		});
 
-		// TODO: add test for failing assertion with assertInstanceOf
-		// TODO: add test for failing assertion with assertObjectHasProperty
-		// TODO: add test for failing assertion with assertArrayContainsValue
+		// assertInstanceOf with incorrect class
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertInstanceOf');
+			that.assertEqual(report.expected, true);
+			that.assertEqual(report.result, false);
+		});
+
+		test(function () {
+			this.assertInstanceOf(new Error(), Suite);
+		});
+
+		// assertObjectHasProperty with unknown property
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertObjectHasProperty');
+			that.assertEqual(report.expected, true);
+			that.assertEqual(report.result, false);
+		});
+
+		test(function () {
+			this.assertObjectHasProperty({}, 'test');
+		});
+
+		// assertArrayContainsValue with unknown value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertArrayContainsValue');
+			that.assertEqual(report.expected, true);
+			that.assertEqual(report.result, false);
+		});
+
+		test(function () {
+			this.assertArrayContainsValue([], 'test');
+		});
 	},
 
 	/*

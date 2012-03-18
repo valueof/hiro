@@ -530,8 +530,8 @@ var hiro = (function (window, undefined) {
 			if (object instanceof prototype)
 				return;
 
-			// TODO: better expected message
-			this.fail_({ assertion: 'assertInstanceOf', expected : prototype, result: object.prototype });
+			// TODO: better expected message (http://stackoverflow.com/questions/332422/how-do-i-get-the-name-of-an-objects-type-in-javascript#answer-332429)
+			this.fail_({ assertion: 'assertInstanceOf', expected : true, result: false });
 		},
 
 		assertObjectHasProperty: function (object, property) {
@@ -542,7 +542,7 @@ var hiro = (function (window, undefined) {
 			this.fail_({ assertion: 'assertObjectHasProperty', expected : true, result: false });
 		},
 
-    // TODO: create assertIndexOf equivalent
+		// TODO: create assertIndexOf equivalent
 		assertArrayContainsValue: function (array, value) {
 			if (-1 !== array.indexOf(value))
 				return;
