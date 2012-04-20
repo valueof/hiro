@@ -1,7 +1,8 @@
 var READY   = 0;
-var RUNNING = 1;
-var PAUSED  = 2;
-var DONE    = 3;
+var WAITING = 1;
+var RUNNING = 2;
+var PAUSED  = 3;
+var DONE    = 4;
 
 var Hiro = function () {
 	this.status = READY;
@@ -62,11 +63,16 @@ Hiro.prototype = {
 	},
 
 	run: function () {
-		this.attempt(this.trigger, "hiro.onStart");
 		this.status = RUNNING;
 
+		this.attempt(function () {
+			this.trigger("hiro.onStart");
+		}, this);
+
 		_.each(this.suites, function (suite) {
-			suite.run();
+			suite.prepare(function () {
+				suite.run();
+			});
 		});
 
 		var interval = setInterval(_.bind(function () {
@@ -76,7 +82,9 @@ Hiro.prototype = {
 
 			if (done) {
 				this.status = DONE;
-				this.attempt(this.trigger, "hiro.onComplete");
+				this.attempt(function () {
+					this.trigger("hiro.onComplete");
+				}, this);
 				clearInterval(interval);
 			}
 		}, this), 100);

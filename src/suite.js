@@ -10,13 +10,24 @@ function Suite(name, methods) {
 }
 
 Suite.prototype = {
-	prepare: function () {
+	loadFixture: function (opts) {
+		this.sandbox = new Sandbox(opts);
+		this.sandbox.append();
+	},
+
+	prepare: function (onReady) {
+		onReady = onReady || function () {};
+		this.status = WAITING;
+
 		// Execute all listeners for suite.onSetup and pre-emptively
 		// finish the suite if any of those listeners throws an
 		// exception.
 
-		var exc = hiro.attempt(hiro.trigger, "suite.onSetup", [ this ]);
-		if (exc !== null)
+		var err = hiro.attempt(function () {
+			hiro.trigger("suite.onSetup", [ this ]);
+		}, this);
+
+		if (err !== null)
 			return void this.complete();
 
 		// Select only functions that start with "test". Only these
@@ -32,6 +43,25 @@ Suite.prototype = {
 		this.queue = _.map(methods, function (func, name) {
 			return new Test(name, func);
 		});
+
+		var interval;
+		if (this.methods.waitFor && _.isFunction(this.methods.waitFor)) {
+			interval = setInterval(_.bind(function () {
+				if (this.status !== WAITING)
+					return;
+
+				if (this.methods.waitFor.apply(this)) {
+					this.status = READY;
+					clearInterval(interval);
+					onReady();
+				}
+			}, this), 100);
+
+			return;
+		}
+
+		this.status = READY;
+		onReady();
 	},
 
 	run: function () {
@@ -39,8 +69,11 @@ Suite.prototype = {
 		// finish the suite if any of those listeners throws an
 		// exception.
 
-		var exc = hiro.attempt(hiro.trigger, "suite.onStart", [ this ]);
-		if (exc !== null)
+		var err = hiro.attempt(function () {
+			hiro.trigger("suite.onStart", [ this ]);
+		}, this);
+
+		if (err !== null)
 			return void this.complete();
 
 		this.status = RUNNING;

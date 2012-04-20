@@ -10,7 +10,7 @@ function Test(name, func) {
 	this.asserts = new Asserts();
 	_.extend(this, _.filter(this.asserts, function (_, name) {
 		return name.slice(0, 6) === "assert"
-	});
+	}));
 }
 
 Test.prototype = {
