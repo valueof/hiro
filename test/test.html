@@ -1,0 +1,42 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>Hiro Test Suite</title>
+		<link rel="stylesheet" href="../lib/nodeunit/nodeunit.css">
+
+		<script src="../src/underscore.js"></script>
+		<script src="../src/sandbox.js"></script>
+
+		<script src="../lib/nodeunit/nodeunit.js"></script>
+		<script src="./sandbox.js"></script>
+	</head>
+
+	<body>
+		<h1 id="nodeunit-header">Hiro Test Suite</h1>
+
+		<div id="containers"></div>
+
+		<!-- sandbox.js -->
+		<textarea type="hiro/fixture" data-name="protagonist" style="display:none;">
+			<html>
+				<body>
+					<script>
+						this.author = "Neal Stephenson";
+					</script>
+				</body>
+			</html>
+		</textarea>
+
+		<script type="hiro/fixture" data-name="book">
+			<html><body>Snow Crash</body></html>
+		</script>
+
+		<script>
+			var containers = document.getElementById("containers");
+			nodeunit.run({
+				"Sandbox": sandbox
+			});
+		</script>
+	</body>
+</html>
