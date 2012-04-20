@@ -22,11 +22,11 @@ Asserts.prototype = {
 	},
 
 	assertTrue: function (val) {
-		this[val ? "done" : "fail"]("assertTrue", "true", val);
+		this[val ? "done" : "fail"]("assertTrue", true, val);
 	},
 
 	assertFalse: function (val) {
-		this[val ? "fail" : "done"]("assertFalse", "false", val);
+		this[val ? "fail" : "done"]("assertFalse", false, val);
 	},
 
 	assertEqual: function (expected, actual) {
@@ -37,6 +37,6 @@ Asserts.prototype = {
 	assertException: function (func, expected) {
 		var err = hiro.attempt(func);
 		var ok  = err && err instanceof expected;
-		this[ok ? "done" : "fail"]("assertException", expected, err ? err.toString() : "null");
+		this[ok ? "done" : "fail"]("assertException", expected, err || null);
 	}
 };

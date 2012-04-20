@@ -6,10 +6,13 @@
 		<link rel="stylesheet" href="../lib/nodeunit/nodeunit.css">
 
 		<script src="../src/underscore.js"></script>
+		<script src="../src/hiro.js"></script>
 		<script src="../src/sandbox.js"></script>
+		<script src="../src/assert.js"></script>
 
 		<script src="../lib/nodeunit/nodeunit.js"></script>
 		<script src="./sandbox.js"></script>
+		<script src="./assert.js"></script>
 	</head>
 
 	<body>
@@ -35,7 +38,8 @@
 		<script>
 			var containers = document.getElementById("containers");
 			nodeunit.run({
-				"Sandbox": sandbox
+				"Sandbox": sandbox,
+				"Asserts": asserts
 			});
 		</script>
 	</body>
