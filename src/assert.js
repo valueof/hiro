@@ -1,3 +1,5 @@
+"use strict";
+
 function Asserts(onFailure) {
 	this.executed = [];
 	this.onFailure = onFailure || function () {};

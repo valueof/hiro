@@ -1,3 +1,5 @@
+"use strict";
+
 function Test(opts) {
 	this.name    = opts.name;
 	this.func    = opts.func;

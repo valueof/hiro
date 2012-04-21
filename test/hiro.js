@@ -1,3 +1,5 @@
+"use strict";
+
 var exports = {};
 
 exports.setUp = function (fn) {
@@ -31,7 +33,7 @@ exports.testEvents = function (test) {
 	this.hiro.trigger("hiro.onStart"); // Listener should be called.
 	test.equal(this.hiro.listeners["hiro.onStart"].length, 1);
 
-	this.hiro.unbind("hiro.onStart", listener);;
+	this.hiro.unbind("hiro.onStart", listener);
 	this.hiro.trigger("hiro.onStart"); // Listener shouldn't be called.
 	test.equal(this.hiro.listeners["hiro.onStart"].length, 0);
 

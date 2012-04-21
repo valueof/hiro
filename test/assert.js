@@ -1,3 +1,5 @@
+"use strict";
+
 var exports = {};
 
 exports.testSuccessfulAsserts = function (test) {

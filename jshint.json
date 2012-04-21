@@ -1,8 +1,0 @@
-{
-    "undef":   true,
-    "browser": true,
-    "maxlen":  100,
-    "strict":  true,
-    "eqnull":  true,
-    "white":   true
-}

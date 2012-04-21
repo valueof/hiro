@@ -1,0 +1,7 @@
+{
+	"name": "Hiro",
+	"version": "2.0.0",
+	"devDependencies": {
+		"grunt": "*"
+	}
+}

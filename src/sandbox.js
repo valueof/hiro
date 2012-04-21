@@ -1,7 +1,9 @@
+"use strict";
+
 function Sandbox(opts) {
 	this.window   = null;
 	this.document = null;
-	this.frame    = null;;
+	this.frame    = null;
 	this.name     = opts.name;
 
 	if (opts.url) {

@@ -1,3 +1,5 @@
+"use strict";
+
 var READY   = 0;
 var WAITING = 1;
 var RUNNING = 2;

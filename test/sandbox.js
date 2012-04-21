@@ -1,3 +1,5 @@
+"use strict";
+
 var exports = {};
 
 exports.setUp = function (fn) {

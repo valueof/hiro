@@ -1,3 +1,5 @@
+"use strict";
+
 function Suite(name, methods) {
 	this.name    = name;
 	this.methods = methods;

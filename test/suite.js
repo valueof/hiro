@@ -1,3 +1,5 @@
+"use strict";
+
 var exports = {};
 
 exports.testConstructor = function (test) {
@@ -60,7 +62,7 @@ exports.testRun = function (test) {
 
 	_.delay(function () {
 		test.equal(suite.status, DONE);
-		test.ok(suite.report.tests.testSimple.success)
+		test.ok(suite.report.tests.testSimple.success);
 		test.done();
 	}, 100);
 };
