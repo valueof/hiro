@@ -9,11 +9,13 @@
 		<script src="../src/hiro.js"></script>
 		<script src="../src/sandbox.js"></script>
 		<script src="../src/assert.js"></script>
+		<script src="../src/test.js"></script>
 
 		<script src="../lib/nodeunit/nodeunit.js"></script>
 		<script src="./hiro.js"></script>
 		<script src="./sandbox.js"></script>
 		<script src="./assert.js"></script>
+		<script src="./test.js"></script>
 	</head>
 
 	<body>
@@ -41,7 +43,8 @@
 			nodeunit.run({
 				"Sandbox": sandbox,
 				"Asserts": asserts,
-				"Hiro":    hirojs
+				"Hiro":    hirojs,
+				"Tests":   tests
 			});
 		</script>
 	</body>

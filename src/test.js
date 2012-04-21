@@ -8,9 +8,14 @@ function Test(name, func) {
 	};
 
 	this.asserts = new Asserts();
-	_.extend(this, _.filter(this.asserts, function (_, name) {
-		return name.slice(0, 6) === "assert"
-	}));
+
+	_.each(Asserts.prototype, _.bind(function (_, name) {
+		if (name.slice(0, 6) !== "assert")
+			return;
+		this[name] = function () {
+			this.asserts[name].apply(this.asserts, arguments);
+		};
+	}, this));
 }
 
 Test.prototype = {
