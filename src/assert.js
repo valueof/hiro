@@ -1,16 +1,15 @@
-function Failure(name, expected, actual) {
-	this.name     = name;
-	this.expected = expected;
-	this.actual   = actual;
-}
-
-function Asserts() {
+function Asserts(onFailure) {
 	this.executed = [];
+	this.onFailure = onFailure || function () {};
 }
 
 Asserts.prototype = {
 	fail: function (name, expected, actual) {
-		throw new Failure(name, expected, actual);
+		this.onFailure({
+			name: name,
+			expected: expected,
+			actual: actual
+		});
 	},
 
 	done: function (name, expected, actual) {

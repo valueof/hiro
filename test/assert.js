@@ -24,19 +24,18 @@ exports.testSuccessfulAsserts = function (test) {
 };
 
 exports.testFailedAsserts = function (test) {
-	var asserts = new Asserts();
-	test.expect(4);
+	var report = null;
+	var asserts = new Asserts(function (rep) {
+		report = rep;
+	});
 
-	try {
-		asserts.assertEqual("Hiro", "Protagonist");
-	} catch (exc) {
-		test.ok(exc instanceof Failure);
-		test.equal(exc.name, "assertEqual");
-		test.equal(exc.expected, "Hiro");
-		test.equal(exc.actual, "Protagonist");
-	} finally {
-		test.done();
-	}
+	test.expect(3);
+
+	asserts.assertEqual("Hiro", "Protagonist");
+	test.equal(report.name, "assertEqual");
+	test.equal(report.expected, "Hiro");
+	test.equal(report.actual, "Protagonist");
+	test.done();
 };
 
 window.asserts = exports;

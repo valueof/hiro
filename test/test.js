@@ -57,7 +57,7 @@ exports.testFailedTest = function (test) {
 };
 
 exports.testPausedTest = function (test) {
-	test.expect(3);
+	test.expect(5);
 
 	var testcase = new Test("testPaused", function () {
 		test.ok(true);
@@ -68,7 +68,33 @@ exports.testPausedTest = function (test) {
 	test.equal(testcase.status, PAUSED);
 	test.strictEqual(testcase.report.success, null);
 
+	testcase.resume();
+	test.equal(testcase.status, DONE);
+	test.ok(testcase.report.success);
+
 	test.done();
+};
+
+exports.testPausedFailedTest = function (test) {
+	var testcase = new Test("testPaused", function () {
+		test.ok(true);
+		this.pause();
+
+		_.defer(_.bind(function () {
+			this.assertTrue(false);
+		}, this));
+	});
+
+	testcase.run();
+	test.equal(testcase.status, PAUSED);
+
+	_.defer(function () {
+		testcase.resume();
+		test.equal(testcase.status, DONE);
+		test.ok(!testcase.report.success);
+
+		test.done();
+	});
 };
 
 window.tests = exports;
