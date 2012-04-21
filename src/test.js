@@ -1,9 +1,10 @@
-function Test(name, func) {
-	this.name   = name;
-	this.func   = func;
-	this.args   = [];
-	this.status = READY;
-	this.report = {
+function Test(opts) {
+	this.name    = opts.name;
+	this.func    = opts.func;
+	this.timeout = opts.timeout || 250;
+	this.args    = [];
+	this.status  = READY;
+	this.report  = {
 		success: null
 	};
 
@@ -11,9 +12,13 @@ function Test(name, func) {
 		this.fail();
 	}, this));
 
+	// Add shortcuts to all available assertions so that you could
+	// access them via 'this'.
+
 	_.each(Asserts.prototype, _.bind(function (_, name) {
 		if (name.slice(0, 6) !== "assert")
 			return;
+
 		this[name] = function () {
 			this.asserts[name].apply(this.asserts, arguments);
 		};
@@ -42,18 +47,21 @@ Test.prototype = {
 			self.func.apply(self, self.args);
 		}, self);
 
-		if (self.status === DONE)
-			return;
-
 		if (err !== null)
 			return void self.fail();
 
-		// If, after executing the test case function, our status is PAUSED
-		// save the timestamp and return. We will need this timestamp to
-		// fail the test if it's running overtime.
+		// Put the test into a paused mode and set a timer to fail the
+		// test after certain period of time.
+
+		if (self.status === DONE)
+			return;
 
 		if (self.status === PAUSED) {
-			// TODO: Save the timestamp.
+			_.delay(function () {
+				if (self.status === PAUSED)
+					self.fail();
+			}, self.timeout);
+
 			return;
 		}
 
@@ -75,11 +83,19 @@ Test.prototype = {
 	fail: function () {
 		this.status = DONE;
 		this.report.success = false;
+
+		hiro.attempt(function () {
+			hiro.trigger('test.onComplete', [ this, false, this.report ]);
+		}, this);
 	},
 
 	success: function () {
 		this.status = DONE;
 		this.report.success = true;
+
+		hiro.attempt(function () {
+			hiro.trigger('test.onComplete', [ this, true, this.report ]);
+		}, this);
 	},
 
 	toString: function () {

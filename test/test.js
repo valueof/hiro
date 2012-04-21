@@ -6,7 +6,10 @@ exports.setUp = function (fn) {
 
 exports.testConstructor = function (test) {
 	var fn = function () {};
-	var testcase = new Test("testSimple", fn);
+	var testcase = new Test({
+		name: "testSimple",
+		func: fn
+	});
 	var asserts = [ "assertTrue", "assertFalse", "assertEqual", "assertException" ];
 
 	test.expect(asserts.length + 6);
@@ -28,10 +31,13 @@ exports.testConstructor = function (test) {
 exports.testSuccessfulTest = function (test) {
 	test.expect(3);
 
-	var testcase = new Test("testSimple", function () {
-		test.ok(true);
-		this.assertTrue(true);
-		this.assertEqual("Hiro", "Hiro");
+	var testcase = new Test({
+		name: "testSimple",
+		func: function () {
+			test.ok(true);
+			this.assertTrue(true);
+			this.assertEqual("Hiro", "Hiro");
+		}
 	});
 
 	testcase.run();
@@ -44,9 +50,12 @@ exports.testSuccessfulTest = function (test) {
 exports.testFailedTest = function (test) {
 	test.expect(3);
 
-	var testcase = new Test("testSimple", function () {
-		test.ok(true);
-		this.assertTrue(false);
+	var testcase = new Test({
+		name: "testSimple",
+		func: function () {
+			test.ok(true);
+			this.assertTrue(false);
+		}
 	});
 
 	testcase.run();
@@ -59,9 +68,12 @@ exports.testFailedTest = function (test) {
 exports.testPausedTest = function (test) {
 	test.expect(5);
 
-	var testcase = new Test("testPaused", function () {
-		test.ok(true);
-		this.pause();
+	var testcase = new Test({
+		name: "testPaused",
+		func: function () {
+			test.ok(true);
+			this.pause();
+		}
 	});
 
 	testcase.run();
@@ -76,13 +88,16 @@ exports.testPausedTest = function (test) {
 };
 
 exports.testPausedFailedTest = function (test) {
-	var testcase = new Test("testPaused", function () {
-		test.ok(true);
-		this.pause();
+	var testcase = new Test({
+		name: "testPaused",
+		func: function () {
+			test.ok(true);
+			this.pause();
 
-		_.defer(_.bind(function () {
-			this.assertTrue(false);
-		}, this));
+			_.defer(_.bind(function () {
+				this.assertTrue(false);
+			}, this));
+		}
 	});
 
 	testcase.run();
@@ -95,6 +110,28 @@ exports.testPausedFailedTest = function (test) {
 
 		test.done();
 	});
+};
+
+exports.testTimedoutTest = function (test) {
+	test.expect(4);
+
+	var testcase = new Test({
+		timeout: 50,
+		name: "testPaused",
+		func: function () {
+			test.ok(true);
+			this.pause();
+		}
+	});
+
+	testcase.run();
+	test.equal(testcase.status, PAUSED);
+
+	_.delay(function () {
+		test.equal(testcase.status, DONE);
+		test.ok(!testcase.report.success);
+		test.done();
+	}, 100);
 };
 
 window.tests = exports;
