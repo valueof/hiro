@@ -31,18 +31,19 @@ Suite.prototype = {
 			return void this.complete();
 
 		// Select only functions that start with "test". Only these
-		// functions will be treated as test cases.
+		// functions will be treated as test cases. Then create a Test
+		// object for each test method and place it in the queue.
 
-		var methods = _.filter(this.methods, _.bind(function (func, name) {
-			return name.slice(0, 4) === "test" && _.isFunction(func);
+		_.each(this.methods, _.bind(function (func, name) {
+			if (name.slice(0, 4) !== "test" || !_.isFunction(func))
+				return;
+
+			var test = new Test({ name: name, func: func });
+			this.queue.push(test);
 		}, this));
 
-		// Create a Test object for each test method and place it in
-		// the queue.
-
-		this.queue = _.map(methods, function (func, name) {
-			return new Test(name, func);
-		});
+		// If there is a special method 'waitFor' call it repeatedly
+		// and wait until it returns true.
 
 		var interval;
 		if (this.methods.waitFor && _.isFunction(this.methods.waitFor)) {
@@ -55,7 +56,7 @@ Suite.prototype = {
 					clearInterval(interval);
 					onReady();
 				}
-			}, this), 100);
+			}, this), 25);
 
 			return;
 		}
@@ -82,7 +83,7 @@ Suite.prototype = {
 		var interval = setInterval(_.bind(function () {
 			// If there is no more tests to run, declare this suite completed.
 
-			if (test === null) {
+			if (test === null || test === undefined) {
 				this.complete();
 				return void clearInterval(interval);
 			}
@@ -91,16 +92,18 @@ Suite.prototype = {
 			// If it's paused, wait until it goes overtime. And if the test is done,
 			// get the next one from the queue.
 
-			if (test.status === READY)
-				test.run();
-
-			// TODO: Asynchronous tests
-
-			if (test.status === DONE) {
-				this.report.tests[test.name] = test.report;
-				test = this.queue.shift();
+			switch (test.status) {
+				case READY:
+					test.run();
+					break;
+				case DONE:
+					this.report.tests[test.name] = test.report;
+					test = this.queue.shift();
+					break;
+				default:
+					// Wait until its done.
 			}
-		}, this), 100);
+		}, this), 25);
 	},
 
 	complete: function () {

@@ -10,12 +10,14 @@
 		<script src="../src/sandbox.js"></script>
 		<script src="../src/assert.js"></script>
 		<script src="../src/test.js"></script>
+		<script src="../src/suite.js"></script>
 
 		<script src="../lib/nodeunit/nodeunit.js"></script>
 		<script src="./hiro.js"></script>
 		<script src="./sandbox.js"></script>
 		<script src="./assert.js"></script>
 		<script src="./test.js"></script>
+		<script src="./suite.js"></script>
 	</head>
 
 	<body>
@@ -41,10 +43,11 @@
 		<script>
 			var containers = document.getElementById("containers");
 			nodeunit.run({
-				"Sandbox": sandbox,
-				"Asserts": asserts,
-				"Hiro":    hirojs,
-				"Tests":   tests
+				Sandbox: sandbox,
+				Asserts: asserts,
+				Hiro:    hirojs,
+				Tests:   tests,
+				Suites:  suites
 			});
 		</script>
 	</body>
