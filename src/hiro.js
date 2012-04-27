@@ -61,7 +61,23 @@ Hiro.prototype = {
 	},
 
 	module: function (name, methods) {
-		this.suites[name] = new Suite(name, methods);
+		var mixin = [];
+
+		if (_.isArray(methods.mixin)) {
+			mixin = _.map(methods.mixin, _.bind(function (n) {
+				if (this.suites[n] === undefined)
+					return {};
+
+				return this.suites[n].methods;
+			}, this));
+
+			delete methods.mixin;
+		}
+
+		mixin.splice(0, 0, {});
+		mixin.push(methods);
+
+		this.suites[name] = new Suite(name, _.extend.apply(_, mixin));
 	},
 
 	run: function () {
