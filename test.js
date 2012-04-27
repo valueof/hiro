@@ -38,12 +38,23 @@ hiro.module('GenericTests', {
 		function exc() { throw new Error(); }
 		function noexc() { return; }
 
-		this.expect(22);
+		this.expect(66);
 		this.assertTrue(true);
 		this.assertFalse(false);
+		this.assertUndefined(undefined);
+		this.assertNull(null);
 		this.assertEqual('test', 'test');
 		this.assertException(exc, Error);
 		this.assertNoException(noexc);
+		this.assertGreaterThan(4, 3);
+		this.assertLessThan(3, 4);
+		this.assertGreaterThanOrEqualTo(4, 3);
+		this.assertGreaterThanOrEqualTo(4, 4);
+		this.assertLessThanOrEqualTo(3, 4);
+		this.assertLessThanOrEqualTo(4, 4);
+		this.assertInstanceOf(new Error(), Error);
+		this.assertObjectHasProperty({ 'test': '' }, 'test');
+		this.assertArrayContainsValue(['test'], 'test');
 
 		// assertTrue
 		hiro_.once('test.onFailure', function (test, report) {
@@ -65,6 +76,28 @@ hiro.module('GenericTests', {
 
 		test(function () {
 			this.assertFalse(true);
+		});
+
+		// assertUndefined
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertUndefined');
+			that.assertUndefined(report.expected);
+			that.assertEqual(report.result, true);
+		});
+
+		test(function () {
+			this.assertUndefined(true);
+		});
+
+		// assertNull
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertNull');
+			that.assertNull(report.expected);
+			that.assertEqual(report.result, true);
+		});
+
+		test(function () {
+			this.assertNull(true);
 		});
 
 		// assertEqual
@@ -110,6 +143,106 @@ hiro.module('GenericTests', {
 
 		test(function () {
 			this.assertNoException(exc);
+		});
+
+		// assertGreaterThan with lower value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertGreaterThan');
+			that.assertEqual(report.expected, 4);
+			that.assertEqual(report.result, 3);
+		});
+
+		test(function () {
+			this.assertGreaterThan(3, 4);
+		});
+
+		// assertGreaterThan with equal value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertGreaterThan');
+			that.assertEqual(report.expected, 4);
+			that.assertEqual(report.result, 4);
+		});
+
+		test(function () {
+			this.assertGreaterThan(4, 4);
+		});
+
+		// assertLessThan with higher value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertLessThan');
+			that.assertEqual(report.expected, 3);
+			that.assertEqual(report.result, 4);
+		});
+
+		test(function () {
+			this.assertLessThan(4, 3);
+		});
+
+		// assertLessThan with equal value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertLessThan');
+			that.assertEqual(report.expected, 4);
+			that.assertEqual(report.result, 4);
+		});
+
+		test(function () {
+			this.assertLessThan(4, 4);
+		});
+
+
+		// assertGreaterThanOrEqualTo with lower value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertGreaterThanOrEqualTo');
+			that.assertEqual(report.expected, 4);
+			that.assertEqual(report.result, 3);
+		});
+
+		test(function () {
+			this.assertGreaterThanOrEqualTo(3, 4);
+		});
+
+		// assertLessThanOrEqualTo with higher value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertLessThanOrEqualTo');
+			that.assertEqual(report.expected, 3);
+			that.assertEqual(report.result, 4);
+		});
+
+		test(function () {
+			this.assertLessThanOrEqualTo(4, 3);
+		});
+
+		// assertInstanceOf with incorrect class
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertInstanceOf');
+			that.assertEqual(report.expected, true);
+			that.assertEqual(report.result, false);
+		});
+
+		test(function () {
+			this.assertInstanceOf(new Error(), Suite);
+		});
+
+		// assertObjectHasProperty with unknown property
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertObjectHasProperty');
+			that.assertEqual(report.expected, true);
+			that.assertEqual(report.result, false);
+		});
+
+		test(function () {
+			this.assertObjectHasProperty({}, 'test');
+		});
+
+		// assertArrayContainsValue with unknown value
+		hiro_.once('test.onFailure', function (test, report) {
+			that.assertEqual(report.assertion, 'assertArrayContainsValue');
+			that.assertEqual(report.expected, true);
+			that.assertEqual(report.result, false);
+		});
+
+		test(function () {
+			this.assertArrayContainsValue([], 'test');
 		});
 	},
 
