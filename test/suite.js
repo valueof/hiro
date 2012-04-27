@@ -18,8 +18,14 @@ exports.testPrepare = function (test) {
 	var isReady       = false;
 	var waitForCalled = false;
 	var onReadyCalled = false;
+	var setUpCalled   = false;
 
 	var suite = new Suite("SimpleSuite", {
+		setUp: function () {
+			setUpCalled = true;
+			test.strictEqual(this, suite);
+		},
+
 		waitFor: function () {
 			waitForCalled = true;
 			return isReady;
@@ -40,6 +46,7 @@ exports.testPrepare = function (test) {
 	isReady = true;
 	_.delay(function () {
 		test.ok(waitForCalled);
+		test.ok(setUpCalled);
 		test.equal(suite.status, READY);
 		test.ok(onReadyCalled);
 		test.done();

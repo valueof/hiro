@@ -32,6 +32,15 @@ Suite.prototype = {
 		if (err !== null)
 			return void this.complete();
 
+		err = hiro.attempt(function () {
+			if (_.isFunction(this.methods.setUp)) {
+				this.methods.setUp.call(this);
+			}
+		}, this);
+
+		if (err !== null)
+			return void this.complete();
+
 		// Select only functions that start with "test". Only these
 		// functions will be treated as test cases. Then create a Test
 		// object for each test method and place it in the queue.
