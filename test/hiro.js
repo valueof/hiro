@@ -40,6 +40,47 @@ exports.testEvents = function (test) {
 	test.done();
 };
 
-// TODO: Integration tests for the run() method.
+exports.testRun = function (test) {
+	test.expect(9);
+
+	hiro.bind("hiro.onComplete", function () {
+		test.done();
+	});
+
+	hiro.module("EmptySuite", {});
+
+	hiro.module("ParentSuite", {
+		testZero: function () {
+			test.ok(true, "testZero");
+		}
+	});
+
+	hiro.module("MySuite", {
+		mixin: [ "EmptySuite", "ParentSuite" ],
+
+		setUp: function () {
+			test.ok(true, "setUp");
+		},
+
+		waitFor: function () {
+			test.ok(true, "waitFor");
+			return true;
+		},
+
+		onTest: function () {
+			test.ok(true, "onTest"); // This should be called three times.
+		},
+
+		testOne: function () {
+			test.ok(true, "testOne");
+		},
+
+		testTwo: function () {
+			test.ok(true, "testTwo");
+		}
+	});
+
+	hiro.run();
+};
 
 window.hirojs = exports;
