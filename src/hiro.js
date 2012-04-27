@@ -108,10 +108,3 @@ Hiro.prototype = {
 		}, this), 100);
 	}
 };
-
-var hiro = new Hiro();
-
-// THESE METHODS SHOULD GO AWAY
-Hiro.prototype.autorun = function () {
-	hiro.run();
-};

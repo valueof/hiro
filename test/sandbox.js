@@ -49,6 +49,4 @@ exports.testSandboxScript = function (test) {
 	test.done();
 };
 
-// TODO: Test Sandbox with URLs.
-
 window.sandbox = exports;

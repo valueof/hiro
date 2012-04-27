@@ -1,0 +1,3 @@
+	window.Hiro = Hiro;
+	window.hiro = hiro;
+})(this, this.document);
