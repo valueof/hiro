@@ -57,8 +57,12 @@ exports.testRun = function (test) {
 	test.expect(3);
 
 	var suite = new Suite("SimpleSuite", {
-		testSimple: function () {
-			test.ok(true);
+		onTest: function () {
+			return [42];
+		},
+
+		testSimple: function (answer) {
+			test.equal(answer, 42);
 			this.assertTrue(true);
 		}
 	});
