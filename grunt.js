@@ -1,6 +1,6 @@
 module.exports = function (grunt) {
 	grunt.initConfig({
-		combine: {
+		build: {
 			dist: {
 				src: [
 					"./src/hiro.js",
@@ -10,8 +10,20 @@ module.exports = function (grunt) {
 					"./src/test.js"
 				],
 
-				dest: "dist/hiro.js"
+				dest: "dist"
 			}
+		},
+
+		watch: {
+			all: {
+				files: [ "./src/**/*.*" ],
+				tasks: "lint build"
+			}
+		},
+
+		server: {
+			port: 7777,
+			base: "./dist/"
 		},
 
 		lint: {
@@ -65,11 +77,11 @@ module.exports = function (grunt) {
 	});
 
 
-	// Combine files together and make sure that we have only
-	// one "use strict"; statement.
-
-	grunt.registerMultiTask('combine', 'Combine files.', function() {
+	grunt.registerMultiTask('build', 'Build Hiro.', function() {
 		var files, src, wrappers;
+
+		// Combine Hiro files together and make sure that we have only
+		// one "use strict"; statement.
 
   	files = grunt.file.expandFiles(this.file.src);
     src = grunt.helper('concat', files, { separator: this.data.separator });
@@ -77,7 +89,7 @@ module.exports = function (grunt) {
 
 		wrappers = grunt.file.expandFiles([ "./src/pre.txt", "./src/post.txt" ]);
 
-    grunt.file.write(this.file.dest, [
+    grunt.file.write(this.file.dest + "/hiro.js", [
 			grunt.file.read(wrappers[0]),
 			src,
 			grunt.file.read(wrappers[1])
@@ -86,9 +98,21 @@ module.exports = function (grunt) {
     if (this.errorCount)
 			return false;
 
-    grunt.log.writeln('File "' + this.file.dest + '" created.');
+		// Copy WebUI files.
+
+		[ "icon.jpg", "webui.js", "webui.css", "index.html" ].forEach(function (name) {
+			grunt.file.copy("./src/webui/" + name, "./dist/" + name);
+		});
+
+		// Copy supporting files (underscore, jquery, bootstrap, etc.)
+
+		grunt.file.copy("./lib/underscore.js", "./dist/underscore.js");
+		grunt.file.copy("./lib/bootstrap/css/bootstrap.css", "./dist/bootstrap.css");
+		grunt.file.copy("./lib/bootstrap/img/glyphicons-halflings.png", "./dist/img/glyphicons-halflings.png");
+		grunt.file.copy("./lib/bootstrap/img/glyphicons-halflings-white.png", "./dist/img/glyphicons-halflings-white.png");
+		grunt.file.copy("./lib/jquery.js", "./dist/jquery.js");
   });
 
-
-	grunt.registerTask("default", "lint:beforeconcat combine lint:afterconcat");
+	grunt.registerTask("default", "lint:beforeconcat build lint:afterconcat");
+	grunt.registerTask("run", "server watch");
 };

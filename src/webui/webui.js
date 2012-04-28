@@ -1,0 +1,1 @@
+var hiro = new Hiro();
