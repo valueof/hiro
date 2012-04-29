@@ -470,6 +470,20 @@ var hiro = (function (window, undefined) {
 			this.fail_({ assertion: 'assertFalse', expected : false, result: value });
 		},
 
+		assertUndefined: function (value) {
+			if (undefined === value)
+				return;
+
+			this.fail_({ assertion: 'assertUndefined', expected : undefined, result: value });
+		},
+
+		assertNull: function (value) {
+			if (null === value)
+				return;
+
+			this.fail_({ assertion: 'assertNull', expected : null, result: value });
+		},
+
 		assertEqual: function (actual, expected) {
 			if (expected === actual)
 				return;
@@ -510,6 +524,31 @@ var hiro = (function (window, undefined) {
 					});
 				}
 			}
+		},
+
+		assertInstanceOf: function (object, prototype) {
+			if (object instanceof prototype)
+				return;
+
+			// TODO: better expected message (http://stackoverflow.com/questions/332422/how-do-i-get-the-name-of-an-objects-type-in-javascript#answer-332429)
+			this.fail_({ assertion: 'assertInstanceOf', expected : true, result: false });
+		},
+
+		assertObjectHasProperty: function (object, property) {
+			if (property in object)
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertObjectHasProperty', expected : true, result: false });
+		},
+
+		// TODO: create assertIndexOf equivalent
+		assertArrayContainsValue: function (array, value) {
+			if (-1 !== array.indexOf(value))
+				return;
+
+			// TODO: better expected message
+			this.fail_({ assertion: 'assertArrayContainsValue', expected : true, result: false });
 		}
 	};
 
