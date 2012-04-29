@@ -39,5 +39,23 @@ Asserts.prototype = {
 		var err = hiro.attempt(func);
 		var ok  = err && err instanceof expected;
 		this[ok ? "done" : "fail"]("assertException", expected, err || null);
+	},
+
+	assertUndefined: function (val) {
+		this[val === void 0 ? "done" : "fail"]("assertUndefined", undefined, val);
+	},
+
+	assertNull: function (val) {
+		this[val === null ? "done" : "fail"]("assertNull", null, val);
+	},
+
+	assertOwnProperty: function (obj, prop) {
+		var ret = _.has(obj, prop);
+		this[ret ? "done" : "fail"]("assertOwnProperty", "(object)", ret);
+	},
+
+	assertIndexOf: function (arr, el) {
+		var ret = _.indexOf(arr, el);
+		this[ret > -1 ? "done" : "fail"]("assertIndexOf", "> -1", ret);
 	}
 };
