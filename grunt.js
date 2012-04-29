@@ -100,7 +100,7 @@ module.exports = function (grunt) {
 
 		// Copy WebUI files.
 
-		[ "icon.jpg", "webui.js", "webui.css", "index.html" ].forEach(function (name) {
+		[ "icon.jpg", "webui.js", "webui.css", "index.html", "example.js" ].forEach(function (name) {
 			grunt.file.copy("./src/webui/" + name, "./dist/" + name);
 		});
 

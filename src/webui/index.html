@@ -13,7 +13,7 @@
 		<script src="webui.js"></script>
 	</head>
 
-	<body>
+	<body onload="main();">
 		<div class="container">
 			<div class="row">
 				<div class="span2 sidebar">
@@ -30,67 +30,8 @@
 						<div class="bar" style="width: 0%;"></div>
 					</div>
 
-					<table class="table table-bordered suite">
-						<thead>
-							<tr>
-								<th colspan="2">MySuite</th>
-							</tr>
-						</thead>
-
-						<tbody>
-							<tr>
-								<td>testSimpleFeature</td>
-								<td class="status">
-									<span class="label label-success">OK</span>
-								</td>
-							</tr>
-
-							<tr>
-								<td>testAnotherFeature</td>
-								<td class="status">
-									<span class="label label-success">OK</span>
-								</td>
-							</tr>
-
-							<tr>
-								<td>testFailedFeature</td>
-								<td class="status">
-									<span class="label label-important">RE-RUN</span>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-
-					<table class="table table-bordered suite">
-						<thead>
-							<tr>
-								<th colspan="2">MySuite</th>
-							</tr>
-						</thead>
-
-						<tbody>
-							<tr>
-								<td>testSimpleFeature</td>
-								<td class="status">
-									<span class="label">RUNNING</span>
-								</td>
-							</tr>
-
-							<tr>
-								<td>testAnotherFeature</td>
-								<td class="status">
-									<span class="label label-success">OK</span>
-								</td>
-							</tr>
-
-							<tr>
-								<td>testFailedFeature</td>
-								<td class="status">
-									<span class="label label-important">FAIL</span>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+					<div id="suite-views">
+					</div>
 
 					<div class="footer">
 						<i class="icon-barcode"></i>
@@ -98,5 +39,45 @@
 				</div>
 			</div>
 		</div>
+
+		<script id="template-suite" type="hiro/template">
+			<table class="table table-bordered suite" id="suite-<%= suiteName %>">
+				<thead>
+					<tr>
+						<th colspan="2"><%= suiteName %></th>
+					</tr>
+				</thead>
+
+				<tbody>
+					<% _.each(tests, function (name) { %>
+					<tr>
+						<td><%= name %></td>
+						<td class="status">
+							<span data-state="ready" class="label">READY</span>
+						</td>
+					</tr>
+					<% }); %>
+				</tbody>
+			</table>
+		</script>
+
+
+		<!--
+			REPLACE these examples with your own test suites and
+			tests. Docs: http://hirojs.com/
+		-->
+
+		<script type="hiro/fixture" data-name="example">
+			<html>
+				<body>
+					<h1>Snow Crash</h1>
+					<h2>by Neal Stephenson</h2>
+
+					<p>Characters: Hiro Protagonist, Y.T., Raven, etc.</p>
+				</body>
+			</html>
+		</script>
+
+		<script src="example.js"></script>
 	</body>
 </html>
