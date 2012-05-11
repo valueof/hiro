@@ -24,10 +24,6 @@ table.suite td.status {
 	text-align: center;
 }
 
-table.suite td.status span {
-	cursor: pointer;
-}
-
 div.footer {
 	text-align: center;
 	margin-top: 100px;

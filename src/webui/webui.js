@@ -49,26 +49,6 @@ var hiro, main;
 		});
 
 		$("#suite-views").append(html);
-
-		var onEnter = function () {
-			var $el = $(this);
-
-			if (_.indexOf(states, $el.attr("data-state")) === -1)
-				return;
-
-			$el.html("RUN TEST");
-		};
-
-		var onLeave = function () {
-			var $el = $(this);
-
-			if (_.indexOf(states, $el.attr("data-state")) === -1)
-				return;
-
-			$el.html("READY");
-		};
-
-		$("#suite-" + this.name + " .status .label").hover(onEnter, onLeave);
 	};
 
 	SuiteView.prototype.addListeners = function () {
