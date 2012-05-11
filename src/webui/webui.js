@@ -6,12 +6,25 @@ var hiro, main;
 (function () {
 	"use strict";
 
+	var size = 0;
+	var completed = 0;
+
 	hiro = new Hiro();
 
 	main = function () {
 		_.each(hiro.suites, function (suite, name) {
 			var view = new SuiteView(name, suite);
+
 			view.render();
+			view.addListeners();
+
+			size += _.reduce(_.keys(suite.methods), function (memo, name) {
+				return memo + (name.slice(0, 4) === "test" ? 1 : 0);
+			}, 0);
+		});
+
+		$("div.runall").click(function () {
+			hiro.run();
 		});
 	};
 
@@ -56,5 +69,30 @@ var hiro, main;
 		};
 
 		$("#suite-" + this.name + " .status .label").hover(onEnter, onLeave);
+	};
+
+	SuiteView.prototype.addListeners = function () {
+		var self = this;
+
+		hiro.bind("suite.onStart", function (suite) {
+		});
+
+		hiro.bind("test.onStart", function (test) {
+			var $el = $("#suite-" + self.name + " .test-" + test.name + " .status .label");
+			$el.html("RUNNING");
+		});
+
+		// BUG: duplicate event triggering.
+		hiro.bind("test.onComplete", function (test, success, report) {
+			var $el = $("#suite-" + self.name + " .test-" + test.name + " .status .label");
+
+			completed += 1;
+			$(".progress .bar").css("width", ((completed / size) * 100) + "%");
+
+			if (success)
+				return void $el.addClass("label-success").html("PASS");
+
+			$el.addClass("label-important").html("FAIL");
+		});
 	};
 })();

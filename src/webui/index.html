@@ -15,28 +15,27 @@
 
 	<body onload="main();">
 		<div class="container">
-			<div class="row">
-				<div class="span2 sidebar">
+			<div class="row-fluid">
+				<div class="span9">
 					<h2><img src="icon.jpg"> Hiro</h2>
-
-					<div class="group">
-						<button class="btn btn-success">
-							<i class="icon-play icon-white"></i> Run all tests.</button>
-					</div>
 				</div>
 
-				<div class="span8 tests">
-					<div class="progress progress-success">
-						<div class="bar" style="width: 0%;"></div>
-					</div>
-
-					<div id="suite-views">
-					</div>
-
-					<div class="footer">
-						<i class="icon-barcode"></i>
-					</div>
+				<div class="span3 runall">
+					<button class="btn btn-success">
+						<i class="icon-play icon-white"></i> Run all tests.
+					</button>
 				</div>
+			</div>
+
+			<div class="progress progress-success">
+				<div class="bar" style="width: 0%;"></div>
+			</div>
+
+			<div id="suite-views">
+			</div>
+
+			<div class="footer">
+				<i class="icon-barcode"></i>
 			</div>
 		</div>
 
@@ -50,7 +49,7 @@
 
 				<tbody>
 					<% _.each(tests, function (name) { %>
-					<tr>
+					<tr class="test-<%= name %>">
 						<td><%= name %></td>
 						<td class="status">
 							<span data-state="ready" class="label">READY</span>
@@ -60,7 +59,6 @@
 				</tbody>
 			</table>
 		</script>
-
 
 		<!--
 			REPLACE these examples with your own test suites and

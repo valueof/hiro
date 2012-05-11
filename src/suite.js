@@ -106,7 +106,7 @@ Suite.prototype = {
 			switch (test.status) {
 				case READY:
 					if (_.isFunction(this.methods.onTest)) {
-						test.args = this.methods.onTest(test) || test.args;
+						test.args = this.methods.onTest.call(this, test) || test.args;
 					}
 
 					test.run();

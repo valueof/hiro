@@ -3,28 +3,24 @@
 
 	hiro.module("BasicTests", {
 		testSimpleAssertions: function () {
-			this.expect(3);
-
 			this.assertTrue(true);
 			this.assertFalse(false);
 			this.assertEqual("Hiro Protagonist", "Hiro Protagonist");
 		},
 
 		testExceptions: function () {
-			this.expect(1);
-
 			this.assertException(function () {
 				throw new Error();
 			}, Error);
 		},
 
 		testAsync: function () {
-			this.expect(1);
-			this.pause();
+			var self = this;
+			self.pause();
 
 			setTimeout(function () {
-				this.assertTrue(true);
-				this.resume();
+				self.assertTrue(true);
+				self.resume();
 			}, 200);
 		}
 	});
@@ -35,11 +31,11 @@
 		},
 
 		waitFor: function () {
-			return this.document.getElementsByTagName("body").length > 0;
+			return this.sandbox.document.getElementsByTagName("body").length > 0;
 		},
 
 		onTest: function () {
-			return [ this.window, this.document ];
+			return [ this.sandbox.window, this.sandbox.document ];
 		},
 
 		testTitle: function (win, doc) {

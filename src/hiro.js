@@ -44,7 +44,7 @@ Hiro.prototype = {
 			return;
 
 		_.each(this.listeners[name], function (fn) {
-			fn.apply(args);
+			fn.apply(fn, args);
 		});
 	},
 

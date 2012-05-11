@@ -1,42 +1,34 @@
-div.sidebar {
-	text-align: center;
+div.container {
+	width: 700px;
 }
 
-div.sidebar h2 {
-	margin: 50px 0 50px 0;
+h2 {
+	margin: 75px 0 25px 0;
 }
 
-div.sidebar h2 img {
+h2 img {
 	margin-top: -13px;
 }
 
-div.sidebar div.group {
-	margin: 25px 0;
+div.runall {
+	margin: 75px 0 25px 0;
+	text-align: right;
 }
 
-div.tests {
-	border-left: solid 1px #ccc;
-	padding: 0 35px 25px 35px;
-}
-
-div.tests div.progress {
-	margin: 140px 0 0 0;
-}
-
-div.tests table.suite {
+table.suite {
 	margin: 25px 0 0 0;
 }
 
-div.tests table.suite td.status {
+table.suite td.status {
 	width: 100px;
 	text-align: center;
 }
 
-div.tests table.suite td.status span {
+table.suite td.status span {
 	cursor: pointer;
 }
 
-div.tests div.footer {
+div.footer {
 	text-align: center;
 	margin-top: 100px;
 }

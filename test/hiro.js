@@ -21,16 +21,17 @@ exports.testConstructor = function (test) {
 };
 
 exports.testEvents = function (test) {
-	test.expect(3);
+	test.expect(4);
 
-	function listener() {
+	function listener(param) {
 		test.ok(true);
+		test.equal(param, "Hiro Protagonist");
 	}
 
 	this.hiro.trigger("hiro.onStart"); // Listener shouldn't be called.
 
 	this.hiro.bind("hiro.onStart", listener);
-	this.hiro.trigger("hiro.onStart"); // Listener should be called.
+	this.hiro.trigger("hiro.onStart", [ "Hiro Protagonist" ]); // Listener should be called.
 	test.equal(this.hiro.listeners["hiro.onStart"].length, 1);
 
 	this.hiro.unbind("hiro.onStart", listener);

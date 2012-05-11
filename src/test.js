@@ -36,7 +36,7 @@ Test.prototype = {
 		// raise an exception.
 
 		err = hiro.attempt(function () {
-			hiro.trigger('test.onStart', [ self ]);
+			hiro.trigger("test.onStart", [ self ]);
 		});
 
 		if (err !== null)
@@ -83,6 +83,8 @@ Test.prototype = {
 	},
 
 	fail: function () {
+		/*jshint debug:true*/
+		debugger;
 		this.status = DONE;
 		this.report.success = false;
 
