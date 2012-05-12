@@ -24,6 +24,14 @@ table.suite td.status {
 	text-align: center;
 }
 
+table.suite tr.report td {
+	background-color: #EEE;
+}
+
+table.suite tr.report td table td {
+	border: none;
+}
+
 div.footer {
 	text-align: center;
 	margin-top: 100px;

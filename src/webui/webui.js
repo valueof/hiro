@@ -30,8 +30,12 @@ var hiro, main;
 
 	function SuiteView(name, model) {
 		this.name = name;
-		this.template = $("script[type='hiro/template']").html();
 		this.tests = [];
+
+		this.templates = {
+			suite: $("#template-suite").html(),
+			report: $("#template-report").html()
+		};
 
 		_.each(model.methods, _.bind(function (func, name) {
 			if (name.slice(0, 4) !== "test")
@@ -43,7 +47,7 @@ var hiro, main;
 
 	SuiteView.prototype.render = function () {
 		var states = [ "ready", "passed", "failed" ];
-		var html = _.template(this.template, {
+		var html = _.template(this.templates.suite, {
 			suiteName: this.name,
 			tests: this.tests
 		});
@@ -60,18 +64,29 @@ var hiro, main;
 		});
 
 		hiro.bind("test.onComplete", function (test, success, report) {
-			var $el = $("#suite-" + self.name + " .test-" + test.name + " .status .label");
+			var $el  = $("#suite-" + self.name + " .test-" + test.name + " .status .label");
+			var $pr  = $(".progress");
+			var $bar = $(".progress .bar");
 
 			if ($el.length === 0)
 				return;
 
 			completed += 1;
-			$(".progress .bar").css("width", ((completed / size) * 100) + "%");
+			$bar.css("width", ((completed / size) * 100) + "%");
 
 			if (success)
 				return void $el.addClass("label-success").html("PASS");
 
 			$el.addClass("label-important").html("FAIL");
+			$pr.removeClass("progress-success").addClass("progress-danger");
+
+			var $report = $("#suite-" + self.name + " .report-" + test.name);
+			$report.find("td").html(_.template(self.templates.report, {
+				assertion: report.name,
+				expected: report.expected,
+				actual: report.actual
+			}));
+			$report.show();
 		});
 	};
 })();

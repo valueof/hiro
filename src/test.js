@@ -11,7 +11,7 @@ function Test(opts) {
 	};
 
 	this.asserts = new Asserts(_.bind(function (details) {
-		this.fail();
+		this.fail(details);
 	}, this));
 
 	// Add shortcuts to all available assertions so that you could
@@ -82,9 +82,10 @@ Test.prototype = {
 		this.success();
 	},
 
-	fail: function () {
+	fail: function (details) {
 		this.status = DONE;
 		this.report.success = false;
+		this.report = _.extend(this.report, details);
 
 		hiro.attempt(function () {
 			hiro.trigger('test.onComplete', [ this, false, this.report ]);

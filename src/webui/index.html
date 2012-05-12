@@ -55,8 +55,31 @@
 							<span data-state="ready" class="label">READY</span>
 						</td>
 					</tr>
+
+					<tr class="report report-<%= name %>" style="display:none;">
+						<td colspan="2"></td>
+					</tr>
 					<% }); %>
 				</tbody>
+			</table>
+		</script>
+
+		<script id="template-report" type="hiro/template">
+			<table>
+				<tr>
+					<td>Assertion:</td>
+					<td><code><%= assertion %></code></td>
+				</tr>
+
+				<tr>
+					<td>Expected:</td>
+					<td><code><%= expected %></code></td>
+				</tr>
+
+				<tr>
+					<td>Actual:</td>
+					<td><code><%= actual %></code></td>
+				</tr>
 			</table>
 		</script>
 

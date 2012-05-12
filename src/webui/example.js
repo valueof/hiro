@@ -44,6 +44,10 @@
 
 		testAuthor: function (win, doc) {
 			this.assertEqual(doc.getElementsByTagName("h2")[0].innerHTML, "by Neal Stephenson");
+		},
+
+		testFailedTest: function () {
+			this.assertTrue(false);
 		}
 	});
 })();
