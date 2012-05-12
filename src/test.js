@@ -83,8 +83,6 @@ Test.prototype = {
 	},
 
 	fail: function () {
-		/*jshint debug:true*/
-		debugger;
 		this.status = DONE;
 		this.report.success = false;
 

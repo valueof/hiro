@@ -54,17 +54,16 @@ var hiro, main;
 	SuiteView.prototype.addListeners = function () {
 		var self = this;
 
-		hiro.bind("suite.onStart", function (suite) {
-		});
-
 		hiro.bind("test.onStart", function (test) {
 			var $el = $("#suite-" + self.name + " .test-" + test.name + " .status .label");
 			$el.html("RUNNING");
 		});
 
-		// BUG: duplicate event triggering.
 		hiro.bind("test.onComplete", function (test, success, report) {
 			var $el = $("#suite-" + self.name + " .test-" + test.name + " .status .label");
+
+			if ($el.length === 0)
+				return;
 
 			completed += 1;
 			$(".progress .bar").css("width", ((completed / size) * 100) + "%");
