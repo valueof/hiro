@@ -26,6 +26,14 @@ var hiro, main;
 		$("div.runall").click(function () {
 			hiro.run();
 		});
+
+		hiro.bind("hiro.onStart", function () {
+			$("div.runall button").attr("disabled", true);
+		});
+
+		hiro.bind("hiro.onComplete", function () {
+			$("div.runall button").removeAttr("disabled");
+		});
 	};
 
 	function SuiteView(name, model) {
