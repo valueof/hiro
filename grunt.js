@@ -27,7 +27,7 @@ module.exports = function (grunt) {
 		},
 
 		lint: {
-			beforeconcat: [ "./src/**/*.js", "./test/**/*.js" ],
+			beforeconcat: [ "./src/**/*.js", "./test/**/*.js", "./bin/**/*.js" ],
 			afterconcat:  [ "./dist/hiro.js" ]
 		},
 
@@ -100,7 +100,8 @@ module.exports = function (grunt) {
 
 		// Copy WebUI files.
 
-		[ "icon.jpg", "webui.js", "webui.css", "index.html", "example.js" ].forEach(function (name) {
+		files = [ "icon.jpg", "webui.js", "webui.css", "index.html", "example.js", "phantom.js" ]
+		files.forEach(function (name) {
 			grunt.file.copy("./src/webui/" + name, "./dist/" + name);
 		});
 

@@ -23,16 +23,22 @@ var hiro, main;
 			}, 0);
 		});
 
-		$("div.runall").click(function () {
-			hiro.run();
-		});
-
 		hiro.bind("hiro.onStart", function () {
 			$("div.runall button").attr("disabled", true);
 		});
 
 		hiro.bind("hiro.onComplete", function () {
 			$("div.runall button").removeAttr("disabled");
+		});
+
+		// If we're inside the PhantomJS environment start running tests
+		// right away. Otherwise assign a listener to the .runall button.
+
+		if (window.haunted)
+			return void hiro.run();
+
+		$("div.runall").click(function () {
+			hiro.run();
 		});
 	};
 

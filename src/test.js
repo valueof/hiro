@@ -80,7 +80,7 @@ Test.prototype = {
 		if (exp !== null) {
 			if (exp !== act) {
 				self.fail({
-					source: "Test case:",
+					source: "Test case",
 					message: "Only " + act + " out of " + exp + " assertions were executed."
 				});
 
