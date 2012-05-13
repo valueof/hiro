@@ -1,12 +1,13 @@
 "use strict";
 
 function Test(opts) {
-	this.name    = opts.name;
-	this.func    = opts.func;
-	this.timeout = opts.timeout || 250;
-	this.args    = [];
-	this.status  = READY;
-	this.report  = {
+	this.name     = opts.name;
+	this.func     = opts.func;
+	this.timeout  = opts.timeout || 250;
+	this.args     = [];
+	this.status   = READY;
+	this.expected = null;
+	this.report   = {
 		success: null
 	};
 
@@ -40,23 +41,26 @@ Test.prototype = {
 		});
 
 		if (err !== null)
-			return void self.fail();
+			return void self.fail({ source: "onStart:", message: err });
 
 		// Call the test case function and fail the test if it raises any
 		// exceptions.
 
 		err = hiro.attempt(function () {
 			self.func.apply(self, self.args);
-		}, self);
+		});
 
 		if (err !== null)
-			return void self.fail();
+			return void self.fail({ source: "Test case:", message: err });
 
-		// Put the test into a paused mode and set a timer to fail the
-		// test after certain period of time.
+		// If test status is DONE it means that an assertion failed and
+		// finished the test prematurely.
 
 		if (self.status === DONE)
 			return;
+
+		// Put the test into a paused mode and set a timer to fail the
+		// test after certain period of time.
 
 		if (self.status === PAUSED) {
 			_.delay(function () {
@@ -67,8 +71,29 @@ Test.prototype = {
 			return;
 		}
 
+		// Check that all expected assertions were executed. If self.expected
+		// is null, user didn't set any expectations so we're golden.
+
+		var exp = self.expected;
+		var act = self.asserts.executed.length;
+
+		if (exp !== null) {
+			if (exp !== act) {
+				self.fail({
+					source: "Test case:",
+					message: "Only " + act + " out of " + exp + " assertions were executed."
+				});
+
+				return;
+			}
+		}
+
 		// Finally, if we're here--declare this test a success and move on.
 		self.success();
+	},
+
+	expect: function (num) {
+		this.expected = num;
 	},
 
 	pause: function () {

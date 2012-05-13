@@ -14,14 +14,24 @@
 			}, Error);
 		},
 
+		testFailedTest: function () {
+			this.assertTrue(false);
+		},
+
 		testAsync: function () {
 			var self = this;
+			self.expect(1);
 			self.pause();
 
 			setTimeout(function () {
 				self.assertTrue(true);
 				self.resume();
 			}, 200);
+		},
+
+		testFailedExpect: function () {
+			this.expect(2);
+			this.assertTrue(true);
 		}
 	});
 
@@ -44,10 +54,6 @@
 
 		testAuthor: function (win, doc) {
 			this.assertEqual(doc.getElementsByTagName("h2")[0].innerHTML, "by Neal Stephenson");
-		},
-
-		testFailedTest: function () {
-			this.assertTrue(false);
 		}
 	});
 })();

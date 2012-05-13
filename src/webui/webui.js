@@ -33,8 +33,9 @@ var hiro, main;
 		this.tests = [];
 
 		this.templates = {
-			suite: $("#template-suite").html(),
-			report: $("#template-report").html()
+			suite:  $("#template-suite").html(),
+			report: $("#template-report").html(),
+			error:  $("#template-report-error").html()
 		};
 
 		_.each(model.methods, _.bind(function (func, name) {
@@ -80,13 +81,24 @@ var hiro, main;
 			$el.addClass("label-important").html("FAIL");
 			$pr.removeClass("progress-success").addClass("progress-danger");
 
-			var $report = $("#suite-" + self.name + " .report-" + test.name);
-			$report.find("td").html(_.template(self.templates.report, {
-				assertion: report.name,
-				expected: report.expected,
-				actual: report.actual
-			}));
-			$report.show();
+			var html;
+			if (report.message) {
+				html = _.template(self.templates.error, {
+					message: report.message,
+					source:  report.source
+				});
+			} else {
+				html = _.template(self.templates.report, {
+					assertion: report.name,
+					expected:  report.expected,
+					actual:    report.actual
+				});
+			}
+
+			$("#suite-" + self.name + " .report-" + test.name + " td")
+				.html(html)
+				.parent("tr")
+				.show();
 		});
 	};
 })();

@@ -136,4 +136,21 @@ exports.testTimedoutTest = function (test) {
 	}, 100);
 };
 
+exports.testFailedExpect = function (test) {
+	test.expect(2);
+
+	var testcase = new Test({
+		name: "testExpect",
+		func: function () {
+			this.expect(2);
+			this.assertTrue(true);
+		}
+	});
+
+	testcase.run();
+	test.equal(testcase.status, DONE);
+	test.ok(!testcase.report.success);
+	test.done();
+};
+
 window.tests = exports;
