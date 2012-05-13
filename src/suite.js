@@ -106,7 +106,22 @@ Suite.prototype = {
 			switch (test.status) {
 				case READY:
 					if (_.isFunction(this.methods.onTest)) {
-						test.args = this.methods.onTest.call(this, test) || test.args;
+
+						// Call the onTest method and use its return results as arguments for
+						// the actual test. If onTest raises an exception--fail the test.
+
+						err = hiro.attempt(function () {
+							test.args = this.methods.onTest.call(this, test) || test.args;
+						}, this);
+
+						if (err !== null) {
+							test.fail({
+								message: err,
+								source: "onTest"
+							});
+
+							return;
+						}
 					}
 
 					test.run();

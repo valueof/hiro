@@ -35,7 +35,7 @@
 		}
 	});
 
-	hiro.module("NovelTest", {
+	hiro.module("NovelTests", {
 		setUp: function () {
 			this.loadFixture({ name: "example" });
 		},
@@ -54,6 +54,16 @@
 
 		testAuthor: function (win, doc) {
 			this.assertEqual(doc.getElementsByTagName("h2")[0].innerHTML, "by Neal Stephenson");
+		}
+	});
+
+	hiro.module("FailedSuite", {
+		onTest: function () {
+			throw new Error("Hello, World.");
+		},
+
+		testSimple: function () {
+			this.assertTrue(true);
 		}
 	});
 })();
