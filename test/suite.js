@@ -62,10 +62,10 @@ exports.testRun = function (test) {
 			return [42];
 		},
 
-		testSimple: function (answer) {
+		testSimple: function (ts, answer) {
 			test.equal(answer, 42);
 			test.equal(this.customProperty, "Don't Panic!");
-			this.assertTrue(true);
+			ts.assertTrue(true);
 		}
 	});
 
@@ -82,12 +82,12 @@ exports.testRun = function (test) {
 
 exports.testFailedRun = function (test) {
 	var suite = new Suite("FailedSuite", {
-		testSuccess: function () {
-			this.assertTrue(true);
+		testSuccess: function (ts) {
+			ts.assertTrue(true);
 		},
 
-		testFailure: function () {
-			this.assertTrue(false);
+		testFailure: function (ts) {
+			ts.assertTrue(false);
 		}
 	});
 

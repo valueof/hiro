@@ -136,24 +136,6 @@ Suite.prototype = {
 						}
 					}
 
-					// Run the test case and bind its context to this suite.
-					// We have to dynamically re-bind a few things here because from inside
-					// the test 'this' should be a mixin of Suite and Test objects.
-
-					if (!test.asserts) {
-						test.asserts = new Asserts(function (details) {
-							test.fail(details);
-						});
-
-						test.asserts.createShortcuts(this, test);
-					}
-
-					_.each([ "expect", "pause", "resume" ], _.bind(function (name) {
-						this[name] = function () {
-							test[name].apply(test, _.toArray(arguments));
-						};
-					}, this));
-
 					test.run(this);
 					break;
 				case DONE:

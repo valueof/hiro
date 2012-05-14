@@ -111,7 +111,8 @@ Hiro.prototype = {
 					});
 					break;
 				case DONE:
-					suite.sandbox.cleanup();
+					if (suite.sandbox)
+						suite.sandbox.cleanup();
 					suite = queue.shift();
 			}
 		}, 100);

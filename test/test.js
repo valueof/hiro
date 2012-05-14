@@ -13,13 +13,20 @@ exports.testConstructor = function (test) {
 		func: fn
 	});
 
-	test.expect(5);
+	var asserts = [ "assertTrue", "assertFalse", "assertEqual", "assertException" ];
+
+	test.expect(asserts.length + 6);
 
 	test.equal(testcase.name, "testSimple");
 	test.equal(testcase.func, fn);
 	test.equal(testcase.args.length, 0);
 	test.strictEqual(testcase.status, READY);
 	test.deepEqual(testcase.report, { success: null });
+	test.ok(testcase.asserts instanceof Asserts);
+
+	_.each(asserts, function (name) {
+		test.ok(_.has(testcase, name));
+	});
 
 	test.done();
 };
@@ -29,10 +36,10 @@ exports.testSuccessfulTest = function (test) {
 
 	var testcase = new Test({
 		name: "testSimple",
-		func: function () {
+		func: function (ts) {
 			test.ok(true);
-			this.assertTrue(true);
-			this.assertEqual("Hiro", "Hiro");
+			ts.assertTrue(true);
+			ts.assertEqual("Hiro", "Hiro");
 		}
 	});
 
@@ -48,9 +55,9 @@ exports.testFailedTest = function (test) {
 
 	var testcase = new Test({
 		name: "testSimple",
-		func: function () {
+		func: function (ts) {
 			test.ok(true);
-			this.assertTrue(false);
+			ts.assertTrue(false);
 		}
 	});
 
@@ -66,9 +73,9 @@ exports.testPausedTest = function (test) {
 
 	var testcase = new Test({
 		name: "testPaused",
-		func: function () {
+		func: function (ts) {
 			test.ok(true);
-			this.pause();
+			ts.pause();
 		}
 	});
 
@@ -86,13 +93,13 @@ exports.testPausedTest = function (test) {
 exports.testPausedFailedTest = function (test) {
 	var testcase = new Test({
 		name: "testPaused",
-		func: function () {
+		func: function (ts) {
 			test.ok(true);
-			this.pause();
+			ts.pause();
 
-			_.defer(_.bind(function () {
-				this.assertTrue(false);
-			}, this));
+			_.defer(function () {
+				ts.assertTrue(false);
+			});
 		}
 	});
 
@@ -114,9 +121,9 @@ exports.testTimedoutTest = function (test) {
 	var testcase = new Test({
 		timeout: 50,
 		name: "testPaused",
-		func: function () {
+		func: function (ts) {
 			test.ok(true);
-			this.pause();
+			ts.pause();
 		}
 	});
 
@@ -135,9 +142,9 @@ exports.testFailedExpect = function (test) {
 
 	var testcase = new Test({
 		name: "testExpect",
-		func: function () {
-			this.expect(2);
-			this.assertTrue(true);
+		func: function (ts) {
+			ts.expect(2);
+			ts.assertTrue(true);
 		}
 	});
 

@@ -8,36 +8,35 @@
 	});
 
 	hiro.module("BasicTests", {
-		testSimpleAssertions: function () {
-			this.assertTrue(true);
-			this.assertFalse(false);
-			this.assertEqual("Hiro Protagonist", "Hiro Protagonist");
+		testSimpleAssertions: function (test) {
+			test.assertTrue(true);
+			test.assertFalse(false);
+			test.assertEqual("Hiro Protagonist", "Hiro Protagonist");
 		},
 
-		testExceptions: function () {
-			this.assertException(function () {
+		testExceptions: function (test) {
+			test.assertException(function (test) {
 				throw new Error();
 			}, Error);
 		},
 
-		testFailedTest: function () {
-			this.assertTrue(false);
+		testFailedTest: function (test) {
+			test.assertTrue(false);
 		},
 
-		testAsync: function () {
-			var self = this;
-			self.expect(1);
-			self.pause();
+		testAsync: function (test) {
+			test.expect(1);
+			test.pause();
 
 			setTimeout(function () {
-				self.assertTrue(true);
-				self.resume();
+				test.assertTrue(true);
+				test.resume();
 			}, 200);
 		},
 
-		testFailedExpect: function () {
-			this.expect(2);
-			this.assertTrue(true);
+		testFailedExpect: function (test) {
+			test.expect(2);
+			test.assertTrue(true);
 		}
 	});
 
@@ -54,12 +53,12 @@
 			return [ this.sandbox.window, this.sandbox.document ];
 		},
 
-		testTitle: function (win, doc) {
-			this.assertEqual(doc.getElementsByTagName("h1")[0].innerHTML, "Snow Crash");
+		testTitle: function (test, win, doc) {
+			test.assertEqual(doc.getElementsByTagName("h1")[0].innerHTML, "Snow Crash");
 		},
 
-		testAuthor: function (win, doc) {
-			this.assertEqual(doc.getElementsByTagName("h2")[0].innerHTML, "by Neal Stephenson");
+		testAuthor: function (test, win, doc) {
+			test.assertEqual(doc.getElementsByTagName("h2")[0].innerHTML, "by Neal Stephenson");
 		}
 	});
 
@@ -68,8 +67,8 @@
 			throw new Error("Hello, World.");
 		},
 
-		testSimple: function () {
-			this.assertTrue(true);
+		testSimple: function (test) {
+			test.assertTrue(true);
 		}
 	});
 })();
