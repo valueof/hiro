@@ -111,7 +111,7 @@ Suite.prototype = {
 						// the actual test. If onTest raises an exception--fail the test.
 
 						err = hiro.attempt(function () {
-							test.args = this.methods.onTest.call(this, test) || test.args;
+							test.args = this.methods.onTest.call(test) || test.args;
 						}, this);
 
 						if (err !== null) {

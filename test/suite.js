@@ -54,15 +54,17 @@ exports.testPrepare = function (test) {
 };
 
 exports.testRun = function (test) {
-	test.expect(3);
+	test.expect(4);
 
 	var suite = new Suite("SimpleSuite", {
 		onTest: function () {
+			this.customProperty = "Don't Panic!";
 			return [42];
 		},
 
 		testSimple: function (answer) {
 			test.equal(answer, 42);
+			test.equal(this.customProperty, "Don't Panic!");
 			this.assertTrue(true);
 		}
 	});
