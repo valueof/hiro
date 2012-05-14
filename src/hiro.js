@@ -81,30 +81,39 @@ Hiro.prototype = {
 	},
 
 	run: function () {
-		this.status = RUNNING;
+		var self = this;
 
-		this.attempt(function () {
-			this.trigger("hiro.onStart");
-		}, this);
+		self.status = RUNNING;
 
-		_.each(this.suites, function (suite) {
-			suite.prepare(function () {
-				suite.run();
-			});
+		self.attempt(function () {
+			self.trigger("hiro.onStart");
 		});
 
-		var interval = setInterval(_.bind(function () {
-			var done = _.all(this.suites, function (suite) {
-				return suite.status === DONE;
-			});
+		var queue = _.map(self.suites, function (suite) {
+			return suite;
+		});
 
-			if (done) {
-				this.status = DONE;
-				this.attempt(function () {
-					this.trigger("hiro.onComplete");
-				}, this);
+		var suite = queue.shift();
+		var interval = setInterval(function () {
+			if (suite === null || suite === undefined) {
+				self.status = DONE;
+				self.attempt(function () {
+					self.trigger("hiro.onComplete");
+				});
 				clearInterval(interval);
+				return;
 			}
-		}, this), 100);
+
+			switch(suite.status) {
+				case READY:
+					suite.prepare(function () {
+						suite.run();
+					});
+					break;
+				case DONE:
+					suite.sandbox.cleanup();
+					suite = queue.shift();
+			}
+		}, 100);
 	}
 };
