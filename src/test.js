@@ -25,7 +25,7 @@ Test.prototype = {
 		});
 
 		if (err !== null)
-			return void self.fail({ source: "onStart:", message: err });
+			return void self.fail({ source: "onStart", message: err });
 
 		// If there is no context, create an Asserts module and add it to the
 		// test.
@@ -47,7 +47,7 @@ Test.prototype = {
 		});
 
 		if (err !== null)
-			return void self.fail({ source: "Test case:", message: err });
+			return void self.fail({ source: "Test case", message: err });
 
 		// If test status is DONE it means that an assertion failed and
 		// finished the test prematurely.
