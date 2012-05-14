@@ -15,12 +15,15 @@ var hiro, main;
 		_.each(hiro.suites, function (suite, name) {
 			var view = new SuiteView(name, suite);
 
-			view.render();
-			view.addListeners();
-
 			size += _.reduce(_.keys(suite.methods), function (memo, name) {
 				return memo + (name.slice(0, 4) === "test" ? 1 : 0);
 			}, 0);
+
+			if (size === 0)
+				return;
+
+			view.render();
+			view.addListeners();
 		});
 
 		hiro.bind("hiro.onStart", function () {

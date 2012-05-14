@@ -1,6 +1,12 @@
 (function () {
 	"use strict";
 
+	hiro.module("EmptySuite", {
+		setUp:   function () {},
+		waitFor: function () { return true; },
+		onTest:  function () {}
+	});
+
 	hiro.module("BasicTests", {
 		testSimpleAssertions: function () {
 			this.assertTrue(true);
