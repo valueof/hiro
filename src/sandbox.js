@@ -43,6 +43,8 @@ Sandbox.prototype = {
 		if (this.type == "url") {
 			frame.src = this.data;
 			container.appendChild(frame);
+			win = frame.contentWindow;
+			doc = win.document;
 		} else {
 			container.appendChild(frame);
 			win = frame.contentWindow;

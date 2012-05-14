@@ -15,6 +15,13 @@ Suite.prototype = {
 	loadFixture: function (opts) {
 		this.sandbox = new Sandbox(opts);
 		this.sandbox.append();
+
+		// For backwards compatibility add a reference to
+		// sandboxed window and document objects to the
+		// suite itself.
+
+		this.window   = this.sandbox.window;
+		this.document = this.sandbox.document;
 	},
 
 	prepare: function (onReady) {
