@@ -118,7 +118,7 @@ Suite.prototype = {
 						// the actual test. If onTest raises an exception--fail the test.
 
 						err = hiro.attempt(function () {
-							test.args = this.methods.onTest.call(test) || test.args;
+							test.args = this.methods.onTest.call(this) || test.args;
 						}, this);
 
 						if (err !== null) {
@@ -131,7 +131,25 @@ Suite.prototype = {
 						}
 					}
 
-					test.run();
+					// Run the test case and bind its context to this suite.
+					// We have to dynamically re-bind a few things here because from inside
+					// the test 'this' should be a mixin of Suite and Test objects.
+
+					if (!test.asserts) {
+						test.asserts = new Asserts(function (details) {
+							test.fail(details);
+						});
+
+						test.asserts.createShortcuts(this, test);
+					}
+
+					_.each([ "expect", "pause", "resume" ], _.bind(function (name) {
+						this[name] = function () {
+							test[name].apply(test, _.toArray(arguments));
+						};
+					}, this));
+
+					test.run(this);
 					break;
 				case DONE:
 					this.report.tests[test.name] = test.report;

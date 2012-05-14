@@ -6,6 +6,20 @@ function Asserts(onFailure) {
 }
 
 Asserts.prototype = {
+	createShortcuts: function (dest, src) {
+		// Add shortcuts to all available assertions so that you could
+		// access them via 'this'.
+
+		_.each(Asserts.prototype, function (_, name) {
+			if (name.slice(0, 6) !== "assert")
+				return;
+
+			dest[name] = function () {
+				src.asserts[name].apply(src.asserts, arguments);
+			};
+		});
+	},
+
 	fail: function (name, expected, actual) {
 		this.onFailure({
 			name: name,

@@ -12,20 +12,14 @@ exports.testConstructor = function (test) {
 		name: "testSimple",
 		func: fn
 	});
-	var asserts = [ "assertTrue", "assertFalse", "assertEqual", "assertException" ];
 
-	test.expect(asserts.length + 6);
+	test.expect(5);
 
 	test.equal(testcase.name, "testSimple");
 	test.equal(testcase.func, fn);
 	test.equal(testcase.args.length, 0);
 	test.strictEqual(testcase.status, READY);
 	test.deepEqual(testcase.report, { success: null });
-	test.ok(testcase.asserts instanceof Asserts);
-
-	_.each(asserts, function (name) {
-		test.ok(_.has(testcase, name));
-	});
 
 	test.done();
 };

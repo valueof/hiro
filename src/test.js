@@ -10,26 +10,10 @@ function Test(opts) {
 	this.report   = {
 		success: null
 	};
-
-	this.asserts = new Asserts(_.bind(function (details) {
-		this.fail(details);
-	}, this));
-
-	// Add shortcuts to all available assertions so that you could
-	// access them via 'this'.
-
-	_.each(Asserts.prototype, _.bind(function (_, name) {
-		if (name.slice(0, 6) !== "assert")
-			return;
-
-		this[name] = function () {
-			this.asserts[name].apply(this.asserts, arguments);
-		};
-	}, this));
 }
 
 Test.prototype = {
-	run: function () {
+	run: function (context) {
 		var self = this;
 		var err;
 
@@ -43,11 +27,23 @@ Test.prototype = {
 		if (err !== null)
 			return void self.fail({ source: "onStart:", message: err });
 
+		// If there is no context, create an Asserts module and add it to the
+		// test.
+
+		if (context === undefined) {
+			self.asserts = new Asserts(function (details) {
+				self.fail(details);
+			});
+
+			self.asserts.createShortcuts(self, self);
+		}
+
 		// Call the test case function and fail the test if it raises any
-		// exceptions.
+		// exceptions. If optional context has been provided bind the test
+		// case to it.
 
 		err = hiro.attempt(function () {
-			self.func.apply(self, self.args);
+			self.func.apply(context || self, self.args);
 		});
 
 		if (err !== null)
