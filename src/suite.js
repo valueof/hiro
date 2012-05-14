@@ -24,6 +24,11 @@ Suite.prototype = {
 		this.document = this.sandbox.document;
 	},
 
+	getFixture: function (name) {
+		var sandbox = new Sandbox({ name: name });
+		return sandbox.data;
+	},
+
 	prepare: function (onReady) {
 		onReady = onReady || function () {};
 		this.status = WAITING;

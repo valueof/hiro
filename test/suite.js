@@ -103,4 +103,11 @@ exports.testFailedRun = function (test) {
 	}, 200);
 };
 
+exports.testGetFixture = function (test) {
+	var suite = new Suite("SimpleSuite");
+	var data = suite.getFixture("book");
+	test.ok(data.search(/Snow\sCrash/) !== -1);
+	test.done();
+};
+
 window.suites = exports;
