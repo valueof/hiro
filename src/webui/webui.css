@@ -36,3 +36,6 @@ div.footer {
 	text-align: center;
 	margin-top: 100px;
 }
+
+/* Don't show fixture elements */
+textarea { display: none; }
