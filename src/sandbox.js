@@ -56,5 +56,9 @@ Sandbox.prototype = {
 		this.window   = win;
 		this.document = doc;
 		this.frame    = frame;
+	},
+
+	cleanup: function () {
+		this.frame.parentNode.removeChild(this.frame);
 	}
 };
