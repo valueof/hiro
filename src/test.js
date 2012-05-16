@@ -66,7 +66,7 @@ Test.prototype = {
 		if (self.status === PAUSED) {
 			_.delay(function () {
 				if (self.status === PAUSED)
-					self.fail();
+					self.fail({ source: "Test case", message: "Timeout limit exceeded." });
 			}, self.timeout);
 
 			return;
