@@ -69,18 +69,19 @@ exports.testFailedTest = function (test) {
 };
 
 exports.testPausedTest = function (test) {
-	test.expect(5);
+	test.expect(6);
 
 	var testcase = new Test({
 		name: "testPaused",
 		func: function (ts) {
 			test.ok(true);
-			ts.pause();
+			ts.pause(100);
 		}
 	});
 
 	testcase.run();
 	test.equal(testcase.status, PAUSED);
+	test.equal(testcase.timeout, 100);
 	test.strictEqual(testcase.report.success, null);
 
 	testcase.resume();

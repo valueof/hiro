@@ -97,7 +97,9 @@ Test.prototype = {
 		this.expected = num;
 	},
 
-	pause: function () {
+	pause: function (timeout) {
+		if (timeout)
+			this.timeout = timeout;
 		this.status = PAUSED;
 	},
 
