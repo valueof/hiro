@@ -120,7 +120,7 @@ Hiro.prototype = {
 		this.suites[name] = new Suite(name, _.extend.apply(_, mixin));
 	},
 
-	run: function () {
+	run: function (name) {
 		var self = this;
 
 		self.status = RUNNING;
@@ -129,7 +129,10 @@ Hiro.prototype = {
 			self.trigger("hiro.onStart");
 		});
 
-		var queue = _.map(self.suites, function (suite) {
+		var queue = _.filter(self.suites, function (suite) {
+			if (name && suite.name !== name)
+				return;
+
 			return suite;
 		});
 

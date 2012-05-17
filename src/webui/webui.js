@@ -47,7 +47,7 @@ var hiro, main;
 			return void hiro.run();
 
 		$("div.runall").click(function () {
-			hiro.run();
+			hiro.run(req || undefined);
 		});
 	};
 
