@@ -101,14 +101,16 @@ var hiro, main;
 			var html;
 			if (report.message) {
 				html = _.template(self.templates.error, {
-					message: report.message,
-					source:  report.source
+					message:  report.message,
+					source:   report.source,
+					location: report.location
 				});
 			} else {
 				html = _.template(self.templates.report, {
 					assertion: report.name,
 					expected:  report.expected,
-					actual:    report.actual
+					actual:    report.actual,
+					location:  report.location
 				});
 			}
 

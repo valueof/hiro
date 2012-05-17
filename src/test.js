@@ -1,4 +1,5 @@
 "use strict";
+/*jshint devel:true */
 
 function Test(opts) {
 	this.name     = opts.name;

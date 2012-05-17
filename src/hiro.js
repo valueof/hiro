@@ -60,6 +60,46 @@ Hiro.prototype = {
 		return null;
 	},
 
+	extractStack: function (err, offset) {
+		var stack;
+		offset = offset || 3;
+
+		// Try to get location using different hacky methods:
+		//  * For Opera use 'stacktrace' property
+		//  * For Firefox and Chrome use 'stack' property.
+		//  * For Safari and PhantomJS use sourceURL but make
+		//	  make sure that it's not self-referencing.
+		//
+		// This code was originally borrowed from QUnit.
+
+		if (err.stacktrace)
+			return err.stacktrace.split("\n")[offset + 3];
+
+		if (err.stack) {
+			stack = err.stack.split("\n");
+
+			if (/^error$/i.test(stack[0]))
+				stack.shift();
+
+			return stack[offset];
+		}
+
+		if (err.sourceURL) {
+			if (/hiro.js$/.test(err.sourceURL))
+				return;
+
+			return err.sourceURL + ":" + err.line;
+		}
+	},
+
+	getLocation: function (offset) {
+		try {
+			throw new Error();
+		} catch (err) {
+			return hiro.extractStack(err, offset);
+		}
+	},
+
 	module: function (name, methods) {
 		var mixin = [];
 

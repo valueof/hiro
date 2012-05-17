@@ -126,14 +126,8 @@ Suite.prototype = {
 							test.args = this.methods.onTest.call(this) || test.args;
 						}, this);
 
-						if (err !== null) {
-							test.fail({
-								message: err,
-								source: "onTest"
-							});
-
-							return;
-						}
+						if (err !== null)
+							return void test.fail({ message: err, source: "onTest" });
 					}
 
 					test.run(this);

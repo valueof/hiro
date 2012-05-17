@@ -81,6 +81,13 @@
 					<td>Actual:</td>
 					<td><code><%= actual %></code></td>
 				</tr>
+
+				<% if (location) { %>
+				<tr>
+					<td>Location:</td>
+					<td><code><%= location %></code></td>
+				</tr>
+				<% } %>
 			</table>
 		</script>
 
@@ -90,6 +97,13 @@
 					<td><%= source %>:</td>
 					<td><code><%= message %></code></td>
 				</tr>
+
+				<% if (location) { %>
+				<tr>
+					<td>Location:</td>
+					<td><code><%= location %></code></td>
+				</tr>
+				<% } %>
 			</table>
 		</script>
 
