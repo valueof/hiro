@@ -12,7 +12,13 @@ var hiro, main;
 	hiro = new Hiro();
 
 	main = function () {
+		var qs = window.location.search.slice(1).split('.');
+		var req = qs.length ? qs[0] : null;
+
 		_.each(hiro.suites, function (suite, name) {
+			if (req && req !== name)
+				return;
+
 			var view = new SuiteView(name, suite);
 
 			size += _.reduce(_.keys(suite.methods), function (memo, name) {
