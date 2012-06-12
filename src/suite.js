@@ -61,7 +61,7 @@ Suite.prototype = {
 			if (name.slice(0, 4) !== "test" || !_.isFunction(func))
 				return;
 
-			var test = new Test({ name: name, func: func });
+			var test = new Test({ name: name, func: func, suite: this });
 			this.queue.push(test);
 		}, this));
 
