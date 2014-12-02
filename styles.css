@@ -1,0 +1,64 @@
+body {
+  background-color: white;
+  font-family: "PT Sans", Arial, Serif;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: #4183C4;
+}
+
+pre.prettyprint {
+	padding: 10px;
+	border: solid 1px #ddd;
+	border-radius: 5px;
+}
+
+code {
+  font-family: "Inconsolata", arial, serif;
+  font-size: 14px;
+}
+
+h1 {
+	margin-top: 50px;
+	font-weight: normal;
+	text-align: center;
+}
+
+h2 {
+	margin-top: 40px;
+	font-weight: normal;
+}
+
+h4 {
+	color: #333;
+	font-weight: normal;
+	font-size: 120%;
+}
+
+img {
+	margin-left: -213px;
+}
+
+a.ribbon img {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: 0;
+}
+
+div.container {
+  text-align: justify;
+	margin: 0 auto;
+	width: 600px;
+}
+
+div.footer {
+  text-align: center;
+  padding: 10px;
+  border-top: solid 1px #ddd;
+  margin-top: 50px;
+}

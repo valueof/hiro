@@ -1,0 +1,266 @@
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+
+		<title>Hiro - third-party JavaScript applications testing framework</title>
+
+		<link rel="stylesheet"
+			href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic&amp;subset=latin">
+		<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Inconsolata">
+		<link rel="stylesheet" href="prettify.css">
+		<link rel="stylesheet" href="styles.css">
+
+		<script src="hyphenator.js"></script>
+		<script src="prettify.js"></script>
+	</head>
+
+	<body onload="prettyPrint();">
+		<a href="https://github.com/valueof/hiro" class="ribbon">
+			<img src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"
+				alt="Fork me on GitHub"></a>
+		</a>
+
+		<div class="container">
+			<h1>Hiro</h1>
+
+<p>Hiro is a small yet powerful testing framework designed with third-party
+JavaScript applications in mind. It runs each test suite in a separate
+iframe sandbox, preventing global state leaks and conflicts.</p>
+
+<p>See also: <a href="demo/index.html">Demo</a>, <a href="https://github.com/valueof/hiro/">Source</a>.</p>
+
+<p><img src="hiro.png" alt="Hiro Screenshot" title="Demo test suite shipped with Hiro"></p>
+
+<h2>Usage</h2>
+
+<p>Hiro's usage pattern resembles patterns used by similar frameworks in
+other languages such as Python (PyUnit) and Java (JUnit). You create test
+suites, load fixtures, write test cases and so on. Let's start with the
+test suites.</p>
+
+<p>Test suites, in Hiro, are created using the <code>hiro.module</code> method. The
+method accepts two parameters: name of the suite and its implementation
+in form of a JavaScript object:</p>
+
+<pre class='prettyprint'><code>hiro.module("MySuite", {
+    setUp: function () {},
+    testFeatureA: function (test) {},
+    testFeatureB: function (test) {}
+});
+</code></pre>
+
+<p>The example above should be pretty self-explanatory. You created a simple
+test suite that defines one special method, <code>setUp</code>, and two test cases:
+<code>testFeatureA</code> and <code>testFeatureB</code>. Hiro supports three types of properties
+for its test suites: control properties, test cases and everything else.
+Control properties are hooks and helpers that you can use to configure the
+suite's behavior. Test cases are, well, test cases--the basic building
+blocks of unit testing. All other properties and methods are ignored by
+Hiro and can be used as helper functions.</p>
+
+<p>Let's go over all control properties that are available today.</p>
+
+<h4>setUp</h4>
+
+<p>This is a hook method which Hiro will automatically call when you run a
+test suite.</p>
+
+<h4>waitFor</h4>
+
+<p>This is a hook method which Hiro will use to check if your suite is ready
+to be executed. If this method is defined, the suite will be paused and
+Hiro will start calling <code>waitFor</code> continuously unti it returns a truthy
+value (or until the timeout treshold is met). As soon as this happens,
+Hiro will start executing test cases.</p>
+
+<h4>onTest</h4>
+
+<p>This is a hook method which Hiro will automatically call before each test
+in a suite. If <code>onTest</code> returns an array, this array will later be passed
+into each test as a list of formal parameters.</p>
+
+<pre class='prettyprint'><code>hiro.module("MySuite", {
+    onTest: function () {
+        // Pass sandboxed version of jQuery into each test
+        return [ this.window.jQuery ];
+    },
+
+    testExtend: function (test, jQuery) {
+        // ...
+    }
+});
+</code></pre>
+
+<h4>mixin</h4>
+
+<p>This is a special property that can be used to tell Hiro to mixin other
+suites into the current one. It accepts an array of strings, each string
+representing a name of a suite to mixin from.</p>
+
+<pre class='prettyprint'><code>hiro.module("MyMixinSuite", {
+    mixin: [ "MyParentSuite", "AnotherParentSuite" ]
+});
+</code></pre>
+
+<p>When creating a suite instance, Hiro will copy all properties and methods
+from <code>MyParentSuite</code> into your current suite. Then it will do the same with
+<code>AnotherParentSuite</code>. And only then it will overwrite created methods
+with those defined in your current suite (if any),.</p>
+
+<h4>test*</h4>
+
+<p>All methods with names starting with <code>test</code> will be recognized as test cases.
+Test cases are single scenarios that must be set up and checked for
+correctness.</p>
+
+<p>After you created your suite, you need to load a fixture and make sure that
+your environment is initialized. To load a fixture you will use a special
+method called <code>loadFixture</code>:</p>
+
+<pre class='prettyprint'><code>hiro.module("MySuite", {
+    setUp: function () {
+        this.loadFixture({ name: "mylib" });
+    }
+});
+</code></pre>
+
+<p>Fixtures in Hiro is a simple HTML document that is injected into a newly
+created iframe. To defined a fixture you will need to write document's
+code into either <code>textarea</code> or <code>script</code> HTML element:</p>
+
+<pre class='prettyprint'><code>&lt;textarea class="fixture" type="hiro/fixture" data-name"mylib"&gt;
+    &lt;html&gt;
+        &lt;head&gt;
+            &lt;script src="mylib.js"&gt;&lt;/script&gt;
+        &lt;/head&gt;
+    &lt;/html&gt;
+&lt;/textarea&gt;
+
+&lt;script type="hiro/fixture" data-name="anotherfixture"&gt;
+    &lt;html&gt;
+        &lt;body&gt;
+            ...
+        &lt;/body&gt;
+    &lt;/html&gt;
+&lt;/script&gt;
+</code></pre>
+
+<p>You can also load a fixture by its URL. But keep in mind that due to
+Same-Origin Policy restrictions your fixture URL must be on the same
+domain, port and protocol as your Hiro installation:</p>
+
+<pre class='prettyprint'><code>hiro.module("MySuite", {
+    setUp: function () {
+        this.loadFixture({ url: "http://localhost/fixture.html" });
+    }
+});
+</code></pre>
+
+<p>Now, once you created your fixture you need to tell Hiro to wait
+until it's been completely loaded. To do so you can use <code>waitFor</code>:</p>
+
+<pre class='prettyprint'><code>hiro.module("MySuite", {
+    setUp: function () {
+        this.loadFixture({ name: "mylib" });
+    },
+
+    waitFor: function () {
+        // this.window refers to the Window object inside the iframe
+        return this.window &amp;&amp; this.window.MyLib;
+    }
+});
+</code></pre>
+
+<p>All the things we described so far are used to prepare the environment.
+As we mentioned above, the basic building blocks of unit testings are
+test cases. Each test case in Hiro, as well as the special hook method
+<code>onTest</code>, has access to the sandboxed environment created for its suite.
+References<code>to that environment—in form of window and document objects
+are available from within test cases as instance properties (i.e.
+properties of</code>this`).</p>
+
+<pre class='prettyprint'><code>hiro.module("MySuite", {
+    testSomeMethod: function (test) {
+        // Here, 'window' refers to the environment where Hiro is loaded
+        // and 'this.window' refers to the sandboxes environment. Same
+        // with 'document' and 'this.document'.
+
+        test.assertTrue(window.hiro != null);
+        test.assertTrue(window.MyLib == null);
+
+        test.assertTrue(this.window.hiro == null);
+        test.assertTrue(this.window.MyLib != null);
+    }
+});
+</code></pre>
+
+<p>You might have noticed that the first argument for every test method is
+a variable named <code>test</code>. This is a special variable that contains useful
+assertions and test helpers.</p>
+
+<h2>Assertions and other test helpers</h2>
+
+<h4>test.expect(num)</h4>
+
+<p>Specifies how many assertions are expected to run within a test.</p>
+
+<h4>test.pause()</h4>
+
+<p>Pauses the current test. This method is usually used before an async
+function call. It also <strong>must</strong> be followed by a call to the <code>resume()</code>
+method later in the code or your test will fail with a timeout error.</p>
+
+<h4>test.resume()</h4>
+
+<p>Resumes the current test.</p>
+
+<h4>test.assertTrue(val)</h4>
+
+<p>A boolean assertion, checks that value is truthy.</p>
+
+<h4>test.assertFalse(val)</h4>
+
+<p>A boolean assertion, checks that value is falsy.</p>
+
+<h4>test.assertEqual(actual, expected)</h4>
+
+<p>A comparison assertion, checks that both values are strictly equal.</p>
+
+<h4>test.assertException(func, [expected])</h4>
+
+<p>Assertion to test if <code>func</code> throws an exception. Accepts an optional
+second parameter, an exception object, to test for a specific
+exception.</p>
+
+<h4>test.assertUndefined(val)</h4>
+
+<p>Same as <code>test.assertTrue(val === undefined)</code>.</p>
+
+<h4>test.assertNull(val)</h4>
+
+<p>Same as <code>test.assertTrue(val === null)</code>.</p>
+
+<h4>test.assertOwnProperty(obj, key)</h4>
+
+<p>Checks that <code>key</code> is an existing and not inherited property of <code>obj</code>.</p>
+
+<h4>test.assertIndexOf(arr, el)</h4>
+
+<p>Checks that <code>el</code> is a part of an array <code>arr</code>.</p>
+
+<h2>Still confused?</h2>
+
+<p>And this is how you use Hiro. If you are still confused check out
+<a href="demo/index.html">our demo</a>.</p>
+
+<h2>Code</h2>
+
+<p>Source code is available on GitHub: <a href="https://github.com/valueof/hiro">valueof/hiro</a>.
+Feel free to fork it, report bugs, submit patches, etc.</p>
+		</div>
+
+		<div class="footer">
+			<p>By <a href="http://twitter.com/valueof">Anton Kovalyov</a>.</p>
+		</div>
+	</body>
+</html>
